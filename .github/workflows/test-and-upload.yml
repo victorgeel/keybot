@@ -12,7 +12,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GITHUB_PUSH_TOKEN }}
+          token: ${{ secrets.PUSH_TOKEN }}
           persist-credentials: false
 
       - name: Set up Python
