@@ -4,7 +4,7 @@ name: Test V2Ray Keys and Upload to R2 & GitHub
 on:
   schedule:
     # နာရီတိုင်း run မယ် (လိုအပ်သလို ပြင်ပါ)
-    - cron: '/15 * * * *'
+    - cron: '0 * * * *'
   workflow_dispatch: # Manually run ခွင့်ပြုရန်
 
 jobs:
