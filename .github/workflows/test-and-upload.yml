@@ -2,7 +2,7 @@ name: Test Keys and Upload Consolidated
 
 on:
   schedule:
-    - cron: '*/30 * * * *' # Run every 30 minutes (UTC)
+    - cron: '*/30 * * * *'
   workflow_dispatch:
 
 jobs:
@@ -87,3 +87,4 @@ jobs:
             echo "R2 upload completed."
           else
             echo "File '${LOCAL_FILE}' not found. Skipping upload."
+          fi
