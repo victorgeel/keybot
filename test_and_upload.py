@@ -43,13 +43,12 @@ MAX_TOTAL_KEYS = 1500 # Bot အတွက် pool များများရှ�
 # Supported protocols prefix list
 SUPPORTED_PROTOCOLS = ["vmess://", "vless://", "trojan://", "ss://"]
 
-# --- Xray Installation (ယခင်အတိုင်း၊ ပြောင်းလဲရန်မလို) ---
+# --- Xray Installation ---
 def download_and_extract_xray():
     """Downloads and extracts the latest Xray core binary using GitHub token."""
     print("Checking/Downloading Xray...")
     if os.path.exists(XRAY_PATH) and os.access(XRAY_PATH, os.X_OK):
          print(f"Xray executable already exists at {os.path.abspath(XRAY_PATH)} and is executable. Skipping download.")
-         # Optional: Add version check here if needed
          return True
 
     try:
@@ -57,7 +56,6 @@ def download_and_extract_xray():
         github_token = os.environ.get('GH_TOKEN') # Provided by Actions typically
         headers = {'Accept': 'application/vnd.github.v3+json'}
         if github_token:
-            # print("Using GitHub token for API request.") # Less verbose
             headers['Authorization'] = f'token {github_token}'
         else:
             print("Warning: GitHub token (GH_TOKEN) not found. Making unauthenticated API request (may hit rate limits).")
@@ -77,7 +75,6 @@ def download_and_extract_xray():
             if machine in ['x86_64', 'amd64']: asset_name = "Xray-linux-64.zip"
             elif machine == 'aarch64': asset_name = "Xray-linux-arm64-v8a.zip"
             else: raise ValueError(f"Unsupported Linux architecture: {machine}")
-        # Add elif for other OS like 'windows', 'darwin' if needed
         else:
             raise ValueError(f"Unsupported operating system: {system}")
 
@@ -93,35 +90,27 @@ def download_and_extract_xray():
             raise ValueError(f"Could not find asset '{asset_name}' for {system} {machine} in release {tag_name}")
 
         print(f"Downloading {asset_url}...")
-        # Increase download timeout for potentially large files
         download_response = requests.get(asset_url, stream=True, timeout=120)
         download_response.raise_for_status()
 
         print("Extracting Xray...")
         if asset_name.endswith(".zip"):
             with zipfile.ZipFile(io.BytesIO(download_response.content)) as zf:
-                # Find the executable within the zip (common names)
                 exe_name = 'xray' # Linux/macOS default
-                # Add logic for windows if needed: if system == 'windows': exe_name = 'xray.exe'
                 extracted = False
                 for member in zf.namelist():
-                    # Avoid extracting directories or files in __MACOSX
                     if member.endswith(exe_name) and not member.startswith('__MACOSX') and not member.endswith('/'):
                         print(f"  Found executable member: {member}")
                         if os.path.exists(XRAY_PATH):
                             print(f"  Removing existing file at {XRAY_PATH}")
                             os.remove(XRAY_PATH)
-                        # Extract the file to the current directory first
                         zf.extract(member, path=".")
-                        extracted_path = os.path.join(".", member) # Path where zip extracted it
-                        target_path = XRAY_PATH # Desired final path
+                        extracted_path = os.path.join(".", member)
+                        target_path = XRAY_PATH
                         print(f"  Extracted to: {extracted_path}")
-
-                        # Move/Rename if necessary (e.g., if it was in a subdirectory)
                         if extracted_path != target_path:
                              print(f"  Moving/Renaming extracted file from {extracted_path} to {target_path}")
                              os.rename(extracted_path, target_path)
-                             # Attempt to remove the parent directory if it's now empty
                              member_dir = os.path.dirname(member)
                              if member_dir and os.path.exists(os.path.join(".", member_dir)):
                                  try:
@@ -129,21 +118,18 @@ def download_and_extract_xray():
                                      print(f"  Removed empty source directory: {os.path.join('.', member_dir)}")
                                  except OSError:
                                      print(f"  Could not remove source directory (might not be empty): {os.path.join('.', member_dir)}")
-                                     pass # Ignore if removal fails
-
+                                     pass
                         print(f"  Extracted '{member}' successfully to '{target_path}'")
                         extracted = True
-                        break # Stop after finding the first match
+                        break
                 if not extracted:
                     raise FileNotFoundError(f"'{exe_name}' not found within the zip file {asset_name}.")
-
         else:
             raise NotImplementedError(f"Extraction not implemented for asset type: {asset_name}")
 
         if not os.path.exists(XRAY_PATH):
             raise FileNotFoundError(f"Xray executable not found at '{XRAY_PATH}' after extraction attempt.")
 
-        # Make executable on Linux/macOS
         if system != 'windows':
             try:
                 print(f"Making '{XRAY_PATH}' executable...")
@@ -152,12 +138,10 @@ def download_and_extract_xray():
                 print(f"'{XRAY_PATH}' is now executable.")
             except Exception as chmod_e:
                 print(f"ERROR: Failed to make '{XRAY_PATH}' executable: {chmod_e}", file=sys.stderr)
-                return False # Indicate failure
+                return False
 
-        # --- Verification Step ---
         print(f"Attempting to verify Xray installation by running: {XRAY_PATH} version")
         try:
-            # Use a short timeout for the version check
             version_process = subprocess.run([XRAY_PATH, "version"], capture_output=True, text=True, timeout=10, check=False, encoding='utf-8', errors='replace')
             print(f"--- XRAY VERSION ---")
             print(f"Exit Code: {version_process.returncode}")
@@ -167,7 +151,6 @@ def download_and_extract_xray():
             print(f"--- END XRAY VERSION ---")
             if version_process.returncode != 0 or "Xray-core" not in version_process.stdout:
                  print("Warning: Xray version command failed or output unexpected. Check Stderr.", file=sys.stderr)
-
         except subprocess.TimeoutExpired:
             print(f"ERROR: Timeout expired while running '{XRAY_PATH} version'. Xray might be unresponsive.", file=sys.stderr)
             return False
@@ -179,22 +162,18 @@ def download_and_extract_xray():
             return False
 
         print("Xray download and setup seems complete.")
-        return True # Success
+        return True
 
     except requests.exceptions.RequestException as req_e:
-        print(f"ERROR: Failed network request during Xray download: {req_e}", file=sys.stderr)
-        return False
+        print(f"ERROR: Failed network request during Xray download: {req_e}", file=sys.stderr); return False
     except zipfile.BadZipFile:
-        print(f"ERROR: Downloaded file is not a valid ZIP archive.", file=sys.stderr)
-        return False
+        print(f"ERROR: Downloaded file is not a valid ZIP archive.", file=sys.stderr); return False
     except (ValueError, NotImplementedError, FileNotFoundError) as setup_e:
-         print(f"ERROR: Failed during Xray setup: {setup_e}", file=sys.stderr)
-         return False
+         print(f"ERROR: Failed during Xray setup: {setup_e}", file=sys.stderr); return False
     except Exception as e:
-        print(f"ERROR: An unexpected error occurred in download_and_extract_xray: {e}", file=sys.stderr)
-        return False
+        print(f"ERROR: An unexpected error occurred in download_and_extract_xray: {e}", file=sys.stderr); return False
 
-# --- Config Generation (ယခင်အတိုင်း၊ ပြောင်းလဲရန်မလို) ---
+# --- Config Generation (Corrected SS Parsing) ---
 def generate_config(key_url):
     """Generates a minimal Xray JSON config for testing various key types."""
     try:
@@ -292,37 +271,113 @@ def generate_config(key_url):
                      stream_settings["tcpSettings"] = {"header": {"type": "http","request": { "path": path_list, "headers": { "Host": host_list } }}}
                 config = base_config
             except Exception as e: print(f"DEBUG: Error processing Trojan link ({e}): {key_url[:70]}..."); return None
-        # --- Shadowsocks (SS) ---
+
+        # --- Shadowsocks (SS) --- SyntaxError fix applied below ---
         elif protocol == "ss":
             try:
-                password = None; method = None; address = None; port = None
-                if '@' in parsed_url.netloc and ':' in parsed_url.netloc: # Format 1 potentially
-                     user_info_part = parsed_url.netloc.split('@')[0]; server_part = parsed_url.netloc.split('@')[1]
-                     if ':' in server_part: address = server_part.split(':')[0]; try: port = int(server_part.split(':')[1]); except ValueError: return None
-                     if ':' in user_info_part:
-                         is_base64 = False
-                         try:
-                             user_info_b64 = user_info_part + '=' * (-len(user_info_part) % 4); decoded_user_info = base64.b64decode(user_info_b64).decode('utf-8', errors='replace')
-                             if ':' in decoded_user_info: method, password = decoded_user_info.split(':', 1); is_base64 = True
-                         except Exception: pass
-                         if not is_base64: try: method, password = user_info_part.split(':', 1); except ValueError: return None
-                     else: return None
-                elif not parsed_url.netloc and parsed_url.path: # Format 2 potentially
+                password = None
+                method = None
+                address = None
+                port = None
+
+                # Format 1: ss://method:password@hostname:port#remarks OR ss://BASE64(method:password)@hostname:port
+                if '@' in parsed_url.netloc and ':' in parsed_url.netloc:
+                    user_info_part = parsed_url.netloc.split('@')[0]
+                    server_part = parsed_url.netloc.split('@')[1]
+
+                    # --- CORRECTED SECTION for SyntaxError ---
+                    # Parse server_part (hostname:port)
+                    if ':' in server_part:
+                        address = server_part.split(':')[0]
+                        try:
+                            # Attempt to convert port to integer
+                            port = int(server_part.split(':')[1])
+                        except ValueError:
+                            # Handle invalid port format
+                            print(f"DEBUG: Invalid port in SS URL server part: {server_part.split(':')[1]} for {key_url[:70]}")
+                            return None # Cannot proceed without valid port
+                    else:
+                        # Handle missing port in server part
+                        print(f"DEBUG: Missing port in SS URL server part: {server_part} for {key_url[:70]}")
+                        return None # Cannot proceed without port
+                    # --- END CORRECTED SECTION ---
+
+                    # Parse user_info_part (method:password or base64 thereof)
+                    if ':' in user_info_part:
+                        is_base64 = False
+                        try:
+                            # Try decoding user_info_part as Base64(method:password)
+                            user_info_b64 = user_info_part + '=' * (-len(user_info_part) % 4)
+                            decoded_user_info = base64.b64decode(user_info_b64).decode('utf-8', errors='replace')
+                            if ':' in decoded_user_info:
+                                method, password = decoded_user_info.split(':', 1)
+                                is_base64 = True
+                        except Exception:
+                            # Decoding failed or result invalid, assume plain text
+                            pass
+                        if not is_base64:
+                            # Treat as plain method:password
+                            try:
+                                method, password = user_info_part.split(':', 1)
+                            except ValueError:
+                                # Plain format also missing colon
+                                print(f"DEBUG: Invalid user info format (no colon): {user_info_part} for {key_url[:70]}")
+                                return None
+                    else:
+                        # User info part has no colon at all
+                        print(f"DEBUG: Invalid user info format (no colon): {user_info_part} for {key_url[:70]}")
+                        return None
+
+                # Format 2: ss://BASE64(method:password@hostname:port)#remarks
+                elif not parsed_url.netloc and parsed_url.path:
                     try:
-                         ss_b64 = parsed_url.path + '=' * (-len(parsed_url.path) % 4); decoded_str = base64.b64decode(ss_b64).decode('utf-8', errors='replace')
-                         if '@' in decoded_str and ':' in decoded_str:
-                              user_info_part = decoded_str.split('@')[0]; server_part = decoded_str.split('@')[1]
-                              if ':' in server_part: address = server_part.split(':')[0]; try: port = int(server_part.split(':')[1]); except ValueError: return None
-                              if ':' in user_info_part: method, password = user_info_part.split(':', 1); else: return None
-                         else: return None
-                    except Exception: print(f"DEBUG: Failed to decode/parse SS Base64 part: {key_url[:70]}"); return None
-                else: return None
-                if not all([password, method, address, port]): print(f"DEBUG: Failed SS part extraction: {key_url[:70]}"); return None
+                        ss_b64 = parsed_url.path + '=' * (-len(parsed_url.path) % 4)
+                        decoded_str = base64.b64decode(ss_b64).decode('utf-8', errors='replace')
+                        # Now parse the decoded string like format 1
+                        if '@' in decoded_str and ':' in decoded_str.split('@')[0] and ':' in decoded_str.split('@')[1]:
+                             user_info_part = decoded_str.split('@')[0]
+                             server_part = decoded_str.split('@')[1]
+                             # Parse decoded parts
+                             method, password = user_info_part.split(':', 1)
+                             address = server_part.split(':')[0]
+                             try:
+                                 port = int(server_part.split(':')[1])
+                             except ValueError:
+                                 print(f"DEBUG: Invalid port in decoded SS Base64: {server_part.split(':')[1]} for {key_url[:70]}")
+                                 return None
+                        else:
+                            # Decoded string doesn't match expected format
+                            print(f"DEBUG: Decoded SS Base64 does not match expected format: {decoded_str[:50]}... for {key_url[:70]}")
+                            return None
+                    except Exception as e:
+                        print(f"DEBUG: Failed to decode/parse full SS Base64 URL ({e}): {key_url[:70]}")
+                        return None
+
+                # Unrecognized SS format
+                else:
+                    print(f"DEBUG: Unrecognized SS URL format: {key_url[:70]}")
+                    return None
+
+                # Final check if all parts were successfully extracted
+                if not all([password, method, address, port]):
+                    print(f"DEBUG: Failed to extract all required SS parts (password/method/address/port missing) for: {key_url[:70]}")
+                    return None # Exit if any part is missing
+
+                # Construct the outbound settings
                 outbound["settings"]["servers"] = [{"address": address,"port": port,"method": method,"password": password}]
-                outbound["streamSettings"]["network"] = "tcp"
+                outbound["streamSettings"]["network"] = "tcp" # SS typically uses TCP directly
+                # Remove security settings if present, not standard for basic SS config
                 if "security" in outbound["streamSettings"]: del outbound["streamSettings"]["security"]
-                config = base_config
-            except Exception as e: print(f"DEBUG: Error processing SS link ({e}): {key_url[:70]}..."); return None
+                if "tlsSettings" in outbound.get("streamSettings", {}): del outbound["streamSettings"]["tlsSettings"]
+
+                config = base_config # Assign the generated config
+
+            # Catch errors during the overall SS processing block
+            except Exception as e:
+                print(f"DEBUG: Error processing SS link ({e}): {key_url[:70]}...")
+                return None
+
+        # --- End of SS handling ---
         else: return None # Unsupported protocol
 
         # Cleanup Empty Settings
@@ -336,7 +391,7 @@ def generate_config(key_url):
         return json.dumps(config, indent=2) if config else None
     except Exception as e: print(f"DEBUG: Outer error in generate_config for {key_url[:70]}...: {e}"); return None
 
-# --- Key Testing (ယခင်အတိုင်း၊ ပြောင်းလဲရန်မလို) ---
+# --- Key Testing ---
 def test_v2ray_key(key_url):
     """Tests a single V2Ray/Xray key using xray run -test and logs failures."""
     config_json = generate_config(key_url)
@@ -367,7 +422,7 @@ def test_v2ray_key(key_url):
             try: os.remove(temp_config_file)
             except Exception as e_rem: print(f"Warning: Failed to remove temp config file {temp_config_file}: {e_rem}")
 
-# --- Main Execution (REVISED for single output file) ---
+# --- Main Execution ---
 def main():
     start_time = time.time()
     print(f"Starting Consolidated Key Tester Script at {time.strftime('%Y-%m-%d %H:%M:%S')}")
@@ -506,4 +561,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
