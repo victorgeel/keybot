@@ -1,97 +1,134 @@
-# Workflow နာမည်
-name: Test V2Ray Keys and Upload to R2 & GitHub
+# Workflow Name
+name: Test Keys and Upload Consolidated
 
 on:
   schedule:
-    # နာရီတိုင်း run မယ် (လိုအပ်သလို ပြင်ပါ)
-    - cron: '0 * * * *'
-  workflow_dispatch: # Manually run ခွင့်ပြုရန်
+    # မိနစ် ၃၀ တိုင်း run ရန် (UTC time)
+    - cron: '*/30 * * * *'
+  workflow_dispatch: # Allows manual triggering
 
 jobs:
   test-and-upload:
-    runs-on: ubuntu-latest # Linux runner ကို သုံးမည်
+    runs-on: ubuntu-latest # Use Linux runner
     steps:
-      # 1. Repository code ကို checkout လုပ်မည် (PUSH_TOKEN ကို အသုံးပြုရန်)
+      # 1. Checkout repository code using PUSH_TOKEN
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.PUSH_TOKEN }}
-          persist-credentials: false # Credential conflict ရှောင်ရန်
+          persist-credentials: false
 
-      # 2. Set up Python
+      # 2. Set up Python environment
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10' # Python version (လိုအပ်လျှင် ပြင်ပါ)
+          python-version: '3.10'
 
-      # 3. Install Python dependencies
+      # 3. Install Python dependencies from requirements.txt
       - name: Install Python dependencies
-        run: pip install requests
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          else
+            echo "requirements.txt not found. Assuming 'requests' is needed."
+            pip install requests
+          fi
 
-      # 4. Download and Extract Xray
-      - name: Download and Extract Xray
-        run: python test_and_upload.py
+      # 4. Run the Python Key Tester Script
+      - name: Run Key Tester Script
         env:
+          # Pass the source URLs (multiline string) from secrets
           SOURCE_URLS_SECRET: ${{ secrets.SOURCE_URLS_SECRET }}
+          # GitHub token for Xray download API calls
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # Execute the python script
+        run: python test_and_upload.py
 
-      - name: Give execute permission to Xray
-        run: chmod +x ./xray
+      # 5. Commit and Push the SINGLE Subscription File using PUSH_TOKEN
+      - name: Commit and Push Consolidated Subscription File
+        run: |
+          # Directory where python script outputs files
+          SUB_DIR="subscription"
+          # The single output file name from the python script
+          OUTPUT_FILE="working_keys.txt"
+          OUTPUT_FILE_PATH="${SUB_DIR}/${OUTPUT_FILE}"
 
-      # 6. Install rclone
+          # Check if the output file exists
+          if [ ! -f "${OUTPUT_FILE_PATH}" ]; then
+            echo "Output file '${OUTPUT_FILE_PATH}' not found. Nothing to commit."
+            # Decide if this is an error or expected (e.g., no working keys)
+            # exit 1 # Exit with error if file MUST exist
+            exit 0 # Exit successfully if file might be absent
+          fi
+
+          echo "Configuring Git user..."
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+          echo "Adding file '${OUTPUT_FILE_PATH}'..."
+          # Add only the single consolidated file
+          git add ${OUTPUT_FILE_PATH}
+
+          echo "Checking for staged changes..."
+          if git diff --staged --quiet; then
+            echo "No changes detected in '${OUTPUT_FILE_PATH}' to commit."
+          else
+            echo "Changes detected. Committing..."
+            # Update commit message for single file
+            git commit -m "Update consolidated working keys (${OUTPUT_FILE}) [skip ci]"
+
+            echo "Setting remote URL with PUSH_TOKEN for push..."
+            git remote set-url origin https://x-access-token:${{ secrets.PUSH_TOKEN }}@github.com/${{ github.repository }}
+
+            echo "Pushing changes to branch ${{ github.ref_name }}..."
+            git push origin HEAD:${{ github.ref_name }}
+            echo "Push completed successfully."
+          fi
+
+      # 6. Install rclone for R2 Upload
       - name: Install rclone
-        run: sudo apt-get update && sudo apt-get install -y rclone
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y rclone
 
-      # 7. Configure rclone for Cloudflare R2
+      # 7. Configure rclone for Cloudflare R2 using Secrets
       - name: Configure rclone for Cloudflare R2
         env:
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
-          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
         run: |
           rclone config create R2 s3 \
             provider=Cloudflare \
             access_key_id=$R2_ACCESS_KEY_ID \
             secret_access_key=$R2_SECRET_ACCESS_KEY \
-            endpoint=$R2_ENDPOINT
+            endpoint=$R2_ENDPOINT \
+            acl=public-read
+          echo "rclone configured for R2."
 
-      # 8. Upload working keys to R2 Bucket
-      - name: Upload working keys to R2 Bucket
+      # 8. Upload the SINGLE working key file to R2 Bucket
+      - name: Upload working key file to R2 Bucket
         env:
           R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
-        run: rclone copy working_keys.txt R2:${R2_BUCKET_NAME}/working_keys.txt --progress --verbose
+        run: |
+          # Local path to the single file
+          LOCAL_FILE="./subscription/working_keys.txt"
+          # Target path in R2 (same filename in the bucket root)
+          R2_TARGET_FILE="R2:${R2_BUCKET_NAME}/working_keys.txt"
 
-      # 9. Clean up working keys file
-      - name: Clean up working keys file
-        run: rm working_keys.txt
+          if [ -f "${LOCAL_FILE}" ]; then
+            echo "Output file '${LOCAL_FILE}' found. Uploading to R2: ${R2_TARGET_FILE}"
+            # Use copyto for single file upload, ensures overwrite
+            rclone copyto --checksum --progress --verbose "${LOCAL_FILE}" "${R2_TARGET_FILE}"
+            echo "R2 Upload completed."
+          else
+            echo "Output file '${LOCAL_FILE}' not found. Skipping R2 upload."
+            # Optional: Delete the file on R2 if it exists but wasn't generated locally?
+            # rclone deletefile "${R2_TARGET_FILE}" || true
+          fi
 
-      # 10. Commit and Push Subscription Files to Repo (မှတ်ချက်အဖြစ် ပြောင်းထားသည်)
-      # - name: Commit and Push Subscription Files to Repo
+      # 9. Clean up local output file (Optional)
+      # - name: Clean up local output file
       #   run: |
-      #     SUB_DIR="." # Working directory ထဲမှာ working_keys.txt ရှိလို့ ပြင်လိုက်သည်
-      #     if [ ! -f "${SUB_DIR}/working_keys.txt" ]; then
-      #       echo "File 'working_keys.txt' not found. Skipping Git commit."
-      #     else
-      #       echo "Configuring Git user..."
-      #       git config --global user.name 'github-actions[bot]'
-      #       git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-
-      #       echo "Adding file 'working_keys.txt' to staging area..."
-      #       git add ${SUB_DIR}/working_keys.txt
-
-      #       echo "Checking for staged changes..."
-      #       if git diff --staged --quiet; then
-      #         echo "No changes detected in '${SUB_DIR}' directory to commit."
-      #       else
-      #         echo "Changes detected. Committing..."
-      #         git commit -m "Update working keys [skip ci]"
-
-      #         echo "Setting remote URL with PAT for push..."
-      #         git remote set-url origin https://x-access-token:${{ secrets.PAT }}@github.com/${{ github.repository }}
-
-      #         echo "Pushing changes to origin..."
-      #         git push origin HEAD:${{ github.ref_name }}
-      #         echo "Push completed successfully."
-      #       fi
-      #     fi
-      #   # env block ကို ဤနေရာတွင် မလိုအပ်တော့ပါ (push command ထဲမှာ token သုံးထားပြီး)
+      #     rm -f ./subscription/working_keys.txt
