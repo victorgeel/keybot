@@ -64,4 +64,34 @@ jobs:
       # 9. Clean up working keys file
       - name: Clean up working keys file
         run: rm working_keys.txt
-        
+
+      # 10. Commit and Push Subscription Files to Repo (မှတ်ချက်အဖြစ် ပြောင်းထားသည်)
+      # - name: Commit and Push Subscription Files to Repo
+      #   run: |
+      #     SUB_DIR="." # Working directory ထဲမှာ working_keys.txt ရှိလို့ ပြင်လိုက်သည်
+      #     if [ ! -f "${SUB_DIR}/working_keys.txt" ]; then
+      #       echo "File 'working_keys.txt' not found. Skipping Git commit."
+      #     else
+      #       echo "Configuring Git user..."
+      #       git config --global user.name 'github-actions[bot]'
+      #       git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+      #       echo "Adding file 'working_keys.txt' to staging area..."
+      #       git add ${SUB_DIR}/working_keys.txt
+
+      #       echo "Checking for staged changes..."
+      #       if git diff --staged --quiet; then
+      #         echo "No changes detected in '${SUB_DIR}' directory to commit."
+      #       else
+      #         echo "Changes detected. Committing..."
+      #         git commit -m "Update working keys [skip ci]"
+
+      #         echo "Setting remote URL with PAT for push..."
+      #         git remote set-url origin https://x-access-token:${{ secrets.PAT }}@github.com/${{ github.repository }}
+
+      #         echo "Pushing changes to origin..."
+      #         git push origin HEAD:${{ github.ref_name }}
+      #         echo "Push completed successfully."
+      #       fi
+      #     fi
+      #   # env block ကို ဤနေရာတွင် မလိုအပ်တော့ပါ (push command ထဲမှာ token သုံးထားပြီး)
