@@ -1,92 +1,89 @@
-# Workflow Name
 name: Test Keys and Upload Consolidated
 
 on:
   schedule:
-    # မိနစ် ၃၀ တိုင်း run ရန် (UTC time)
-    - cron: '*/30 * * * *'
-  workflow_dispatch: # Allows manual triggering
+    - cron: '*/30 * * * *' # Run every 30 minutes (UTC)
+  workflow_dispatch:
 
 jobs:
   test-and-upload:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout repository code
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.PUSH_TOKEN }}
           persist-credentials: false
 
-      # 2. Set up Python
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
-      # 3. Install Python dependencies
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then
             pip install -r requirements.txt
           else
-            echo "requirements.txt not found. Installing 'requests'."
+            echo "requirements.txt not found. Installing 'requests'"
             pip install requests
+          fi
 
-      # 4. Run the Python key tester
       - name: Run Key Tester Script
         env:
           SOURCE_URLS_SECRET: ${{ secrets.SOURCE_URLS_SECRET }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python test_and_upload.py
 
-      # 5. Commit and push generated file
-      - name: Commit and Push Consolidated File
+      - name: Commit and Push Consolidated Subscription File
         run: |
           SUB_DIR="subscription"
           OUTPUT_FILE="working_keys.txt"
-          OUTPUT_PATH="${SUB_DIR}/${OUTPUT_FILE}"
+          OUTPUT_FILE_PATH="${SUB_DIR}/${OUTPUT_FILE}"
 
-          if [ ! -f "${OUTPUT_PATH}" ]; then
-            echo "No output file found. Skipping commit."
+          if [ ! -f "${OUTPUT_FILE_PATH}" ]; then
+            echo "Output file '${OUTPUT_FILE_PATH}' not found. Nothing to commit."
             exit 0
           fi
 
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
 
-          git add "${OUTPUT_PATH}"
+          git add ${OUTPUT_FILE_PATH}
           if git diff --staged --quiet; then
             echo "No changes to commit."
           else
-            git commit -m "Update consolidated working keys [skip ci]"
+            git commit -m "Update consolidated working keys (${OUTPUT_FILE}) [skip ci]"
             git remote set-url origin https://x-access-token:${{ secrets.PUSH_TOKEN }}@github.com/${{ github.repository }}
             git push --force origin HEAD:${{ github.ref_name }}
           fi
 
-      # 6. Install rclone
       - name: Install rclone
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y rclone
 
-      # 7. Upload to Cloudflare R2 using API token and flags
-      - name: Upload to Cloudflare R2 (Bucket:bot)
+      - name: Upload working key file to Cloudflare R2
+        env:
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
         run: |
           LOCAL_FILE="./subscription/working_keys.txt"
+          TARGET_FILE="s3:${R2_BUCKET_NAME}/working_keys.txt"
+
           if [ -f "${LOCAL_FILE}" ]; then
-            echo "Uploading ${LOCAL_FILE} to R2 bucket 'bot'..."
-            rclone copyto "${LOCAL_FILE}" \
-              :s3:bot/working_keys.txt \
+            echo "Uploading ${LOCAL_FILE} to R2..."
+            rclone copyto "${LOCAL_FILE}" "${TARGET_FILE}" \
               --s3-provider Cloudflare \
-              --s3-endpoint https://05b6101a6be3c69abad39bf39e6561bf.r2.cloudflarestorage.com \
-              --s3-access-key-id 306cfaa08588ee59440f8ee730390c4b \
-              --s3-secret-access-key b79d4b87aaa2e65565183c8e48e2169045b33c39064eb792beaa431a9ddd97e8 \
+              --s3-access-key-id "${R2_ACCESS_KEY_ID}" \
+              --s3-secret-access-key "${R2_SECRET_ACCESS_KEY}" \
+              --s3-endpoint "${R2_ENDPOINT}" \
               --s3-acl public-read \
-              --progress --verbose
-            echo "Upload completed."
+              --checksum --progress --verbose
+            echo "R2 upload completed."
           else
-            echo "No local file to upload."
-          fi
+            echo "File '${LOCAL_FILE}' not found. Skipping upload."
