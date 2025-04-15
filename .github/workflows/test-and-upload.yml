@@ -23,16 +23,13 @@ jobs:
       - name: Install Python dependencies
         run: pip install requests
 
-      - name: List files in current directory
-        run: ls -l
-
-      - name: Give execute permission to Xray
-        run: chmod +x ./xray
-
       - name: Download and Extract Xray
         run: python test_and_upload.py
         env:
           SOURCE_URLS_SECRET: ${{ secrets.SOURCE_URLS_SECRET }}
+
+      - name: Give execute permission to Xray
+        run: chmod +x ./xray
 
       - name: Install rclone
         run: sudo apt-get update && sudo apt-get install -y rclone
