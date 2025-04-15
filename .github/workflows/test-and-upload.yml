@@ -73,7 +73,7 @@ jobs:
           sudo apt-get install -y rclone
 
       # 7. Upload to Cloudflare R2 using API token and flags
-      - name: Upload to Cloudflare R2 (Bucket: bot)
+      - name: Upload to Cloudflare R2 (Bucket:bot)
         run: |
           LOCAL_FILE="./subscription/working_keys.txt"
           if [ -f "${LOCAL_FILE}" ]; then
