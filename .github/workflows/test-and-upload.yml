@@ -1,28 +1,34 @@
-name: Test V2Ray Keys and Upload to R2
+# Workflow နာမည်
+name: Test V2Ray Keys and Upload to R2 & GitHub
 
 on:
   schedule:
-    - cron: '*/15 * * * *' # Run every 15 minutes
-  workflow_dispatch:
+    # နာရီတိုင်း run မယ် (လိုအပ်သလို ပြင်ပါ)
+    - cron: '0 * * * *'
+  workflow_dispatch: # Manually run ခွင့်ပြုရန်
 
 jobs:
   test-and-upload:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest # Linux runner ကို သုံးမည်
     steps:
+      # 1. Repository code ကို checkout လုပ်မည် (PAT ကို အသုံးပြုရန်)
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.PUSH_TOKEN }}
-          persist-credentials: false
+          token: ${{ secrets.PAT }} # Repository ကို ပြန် push လုပ်ဖို့ PAT ကိုသုံးမည်
+          persist-credentials: false # Credential conflict ရှောင်ရန်
 
+      # 2. Set up Python
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.10' # Python version (လိုအပ်လျှင် ပြင်ပါ)
 
+      # 3. Install Python dependencies
       - name: Install Python dependencies
         run: pip install requests
 
+      # 4. Download and Extract Xray
       - name: Download and Extract Xray
         run: python test_and_upload.py
         env:
@@ -31,9 +37,11 @@ jobs:
       - name: Give execute permission to Xray
         run: chmod +x ./xray
 
+      # 6. Install rclone
       - name: Install rclone
         run: sudo apt-get update && sudo apt-get install -y rclone
 
+      # 7. Configure rclone for Cloudflare R2
       - name: Configure rclone for Cloudflare R2
         env:
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
@@ -47,10 +55,12 @@ jobs:
             secret_access_key=$R2_SECRET_ACCESS_KEY \
             endpoint=$R2_ENDPOINT
 
-      - name: Upload working keys to R2
+      # 8. Upload working keys to R2 Bucket
+      - name: Upload working keys to R2 Bucket
         env:
           R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
         run: rclone copy working_keys.txt R2:${R2_BUCKET_NAME}/working_keys.txt --progress --verbose
 
+      # 9. Clean up working keys file
       - name: Clean up working keys file
         run: rm working_keys.txt
