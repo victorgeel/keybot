@@ -9,131 +9,84 @@ on:
 
 jobs:
   test-and-upload:
-    runs-on: ubuntu-latest # Use Linux runner
+    runs-on: ubuntu-latest
+
     steps:
-      # 1. Checkout repository code using PUSH_TOKEN
+      # 1. Checkout repository code
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.PUSH_TOKEN }}
           persist-credentials: false
 
-      # 2. Set up Python environment
+      # 2. Set up Python
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10' # Python version ကို လိုအပ်သလို ပြင်ပါ
+          python-version: '3.10'
 
-      # 3. Install Python dependencies from requirements.txt
+      # 3. Install Python dependencies
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then
             pip install -r requirements.txt
           else
-            echo "requirements.txt not found. Assuming 'requests' is needed."
-            pip install requests # requirements.txt မရှိရင် requests ကို install လုပ်မည်
-          fi
+            echo "requirements.txt not found. Installing 'requests'."
+            pip install requests
 
-      # 4. Run the Python Key Tester Script
+      # 4. Run the Python key tester
       - name: Run Key Tester Script
         env:
-          # Pass the source URLs (multiline string) from secrets
           SOURCE_URLS_SECRET: ${{ secrets.SOURCE_URLS_SECRET }}
-          # GitHub token for Xray download API calls
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        # Execute the python script
-        run: python test_and_upload.py # Script file name မှန်ကန်ပါစေ
+        run: python test_and_upload.py
 
-      # 5. Commit and Push the SINGLE Subscription File using PUSH_TOKEN
-      - name: Commit and Push Consolidated Subscription File
+      # 5. Commit and push generated file
+      - name: Commit and Push Consolidated File
         run: |
-          # Directory where python script outputs files
           SUB_DIR="subscription"
-          # The single output file name from the python script
           OUTPUT_FILE="working_keys.txt"
-          OUTPUT_FILE_PATH="${SUB_DIR}/${OUTPUT_FILE}"
+          OUTPUT_PATH="${SUB_DIR}/${OUTPUT_FILE}"
 
-          # Check if the output file exists
-          if [ ! -f "${OUTPUT_FILE_PATH}" ]; then
-            echo "Output file '${OUTPUT_FILE_PATH}' not found. Nothing to commit."
-            exit 0 # Exit successfully if file might be absent
+          if [ ! -f "${OUTPUT_PATH}" ]; then
+            echo "No output file found. Skipping commit."
+            exit 0
           fi
 
-          echo "Configuring Git user..."
-          # Actions bot အဖြစ် commit ပြုလုပ်ရန်
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
 
-          echo "Adding file '${OUTPUT_FILE_PATH}'..."
-          # ဖိုင်တစ်ခုတည်းကိုသာ add လုပ်ရန်
-          git add ${OUTPUT_FILE_PATH}
-
-          echo "Checking for staged changes..."
+          git add "${OUTPUT_PATH}"
           if git diff --staged --quiet; then
-            echo "No changes detected in '${OUTPUT_FILE_PATH}' to commit."
+            echo "No changes to commit."
           else
-            echo "Changes detected. Committing..."
-            # Commit message ကို ပြင်ဆင်ထားသည်
-            git commit -m "Update consolidated working keys (${OUTPUT_FILE}) [skip ci]"
-
-            echo "Setting remote URL with PUSH_TOKEN for push..."
-            # Push လုပ်ရန် PAT (PUSH_TOKEN) ဖြင့် remote URL သတ်မှတ်
+            git commit -m "Update consolidated working keys [skip ci]"
             git remote set-url origin https://x-access-token:${{ secrets.PUSH_TOKEN }}@github.com/${{ github.repository }}
-
-            echo "Pushing changes to branch ${{ github.ref_name }} (force)..." # Log message ကို ပြင်ထားသည်
-            # --- ဤနေရာတွင် --force ထည့်သွင်းထားသည် ---
-            git push --force origin HEAD:${{ github.ref_name }} # Workflow run နေတဲ့ branch ကို force push လုပ်မည် (ဥပမာ main)
-            # -----------------------------------------
-            echo "Force push completed successfully."
+            git push --force origin HEAD:${{ github.ref_name }}
           fi
 
-      # 6. Install rclone for R2 Upload
+      # 6. Install rclone
       - name: Install rclone
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y rclone
 
-      # 7. Configure rclone for Cloudflare R2 using Secrets
-      - name: Configure rclone for Cloudflare R2
-        env:
-          # R2 Credentials များကို Secrets မှ ရယူသုံးစွဲ
-          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }} # Account Endpoint (e.g., https://<accountid>.r2.cloudflarestorage.com) ကို သုံးသင့်သည်
+      # 7. Upload to Cloudflare R2 using API token and flags
+      - name: Upload to Cloudflare R2 (Bucket: bot)
         run: |
-          rclone config create R2 s3 \
-            provider=Cloudflare \
-            access_key_id=$R2_ACCESS_KEY_ID \
-            secret_access_key=$R2_SECRET_ACCESS_KEY \
-            endpoint=$R2_ENDPOINT \
-            acl=public-read # Public ဖတ်ခွင့်ပေးထားရန် (Bot က Public URL မှ fetch လုပ်ရန်)
-          echo "rclone configured for R2."
-
-      # 8. Upload the SINGLE working key file to R2 Bucket
-      - name: Upload working key file to R2 Bucket
-        env:
-          # R2 Bucket Name ကို Secret မှ ရယူသုံးစွဲ
-          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
-        run: |
-          # Local path to the single file
           LOCAL_FILE="./subscription/working_keys.txt"
-          # Target path in R2 (bucket root ထဲမှာ ဒီနာမည်နဲ့ သိမ်းမည်)
-          R2_TARGET_FILE="R2:${R2_BUCKET_NAME}/working_keys.txt"
-
           if [ -f "${LOCAL_FILE}" ]; then
-            echo "Output file '${LOCAL_FILE}' found. Uploading to R2: ${R2_TARGET_FILE}"
-            # copyto command ဖြင့် ဖိုင်တစ်ခုတည်းကို upload လုပ်ပြီး overwrite လုပ်မည်
-            rclone copyto --checksum --progress --verbose "${LOCAL_FILE}" "${R2_TARGET_FILE}"
-            echo "R2 Upload completed."
+            echo "Uploading ${LOCAL_FILE} to R2 bucket 'bot'..."
+            rclone copyto "${LOCAL_FILE}" \
+              :s3:bot/working_keys.txt \
+              --s3-provider Cloudflare \
+              --s3-endpoint https://05b6101a6be3c69abad39bf39e6561bf.r2.cloudflarestorage.com \
+              --s3-access-key-id 306cfaa08588ee59440f8ee730390c4b \
+              --s3-secret-access-key b79d4b87aaa2e65565183c8e48e2169045b33c39064eb792beaa431a9ddd97e8 \
+              --s3-acl public-read \
+              --progress --verbose
+            echo "Upload completed."
           else
-            echo "Output file '${LOCAL_FILE}' not found. Skipping R2 upload."
-            # Optional: R2 ပေါ်မှာ ဖိုင်ရှိနေပြီး ဒီ run မှာ generate မလုပ်ခဲ့ရင် ဖျက်လိုပါက
-            # rclone deletefile "${R2_TARGET_FILE}" || true
+            echo "No local file to upload."
           fi
-
-      # 9. Clean up local output file (Optional - မလိုအပ်ပါက comment ပြန်ပိတ်ထားပါ)
-      # - name: Clean up local output file
-      #   run: |
-      #     echo "Removing local file ./subscription/working_keys.txt..."
-      #     rm -f ./subscription/working_keys.txt
