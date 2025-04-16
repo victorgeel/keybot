@@ -27,13 +27,13 @@ jobs:
           python-version: '3.10' # Specify Python version
           cache: 'pip' # Cache pip dependencies for faster installs
 
-      # 3. Install Python dependencies
+      # 3. Install Python dependencies (FIXED: Added SOCKS support)
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
-          # Only need 'requests' for the current script
-          pip install requests
-          echo "Installed required Python packages."
+          # Install requests AND socks support needed for proxy testing
+          pip install requests[socks]
+          echo "Installed required Python packages (requests with SOCKS)."
 
       # 4. Run the Python Key Tester Script
       - name: Run Key Tester Script
@@ -68,17 +68,21 @@ jobs:
           git add ${OUTPUT_FILE_PATH}
 
           echo "Checking for staged changes..."
+          # Use exit code of diff to check for changes
           if git diff --staged --quiet; then
             echo "No changes detected in '${OUTPUT_FILE_PATH}' to commit."
             echo "changes_pushed=false" >> $GITHUB_OUTPUT
           else
             echo "Changes detected. Committing..."
+            # Add [skip ci] to prevent triggering another workflow run from this commit
             git commit -m "Update consolidated working keys (${OUTPUT_FILE}) [skip ci]"
 
             echo "Setting remote URL with token for push..."
+            # Use the GITHUB_REPOSITORY variable which is always available
             git remote set-url origin https://x-access-token:${GIT_PUSH_TOKEN}@github.com/${{ github.repository }}
 
             echo "Pushing changes to branch '${{ github.ref_name }}' (force)..."
+            # Use --force with caution. Ensures the repo reflects the latest test results.
             if git push --force origin HEAD:${{ github.ref_name }}; then
                echo "Force push completed successfully."
                echo "changes_pushed=true" >> $GITHUB_OUTPUT
@@ -120,6 +124,7 @@ jobs:
           echo "--- End R2 Env Var Check ---"
 
           echo "Creating rclone config for R2 remote named 'R2Storage'..."
+          # Configure rclone using environment variables - creates temporary config
           rclone config create R2Storage s3 \
             provider=Cloudflare \
             access_key_id=$R2_ACCESS_KEY_ID \
@@ -127,13 +132,12 @@ jobs:
             endpoint=$R2_ENDPOINT \
             acl=public-read # Make uploaded file publicly readable
           echo "rclone configured for R2."
-          # Keep remote listing as a quick verification
           echo "Verifying configuration by listing remotes:"
-          rclone listremotes
+          rclone listremotes # Should show R2Storage:
 
       # 8. Upload the SINGLE working key file to R2 Bucket
       - name: Upload working key file to R2 Bucket
-        if: success() # Only run if previous steps (like rclone config) were successful
+        if: success() # Only run if previous steps were successful
         env:
           R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
         run: |
@@ -147,8 +151,7 @@ jobs:
 
           if [ -f "${LOCAL_FILE}" ]; then
             echo "Output file '${LOCAL_FILE}' found. Attempting upload to R2: ${R2_TARGET_PATH}"
-            # Removed --verbose to reduce log noise. Keep --progress for visual feedback.
-            # Error messages will still be shown by rclone on failure.
+            # Removed --verbose. Keep --progress.
             rclone copyto --checksum --progress --retries 3 --retries-sleep 5s "${LOCAL_FILE}" "${R2_TARGET_PATH}"
             echo "R2 Upload command finished. Check logs above for success/errors."
           else
