@@ -1,82 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
-# FILE: test_and_upload.py
-# Description: Fetches V2Ray/Xray keys from multiple sources,
-#              tests their connectivity using the xray-knife ping command,
-#              stops testing early when a target number of working keys are found,
-#              deduplicates and saves the working keys to a file.
-# Version: 2.3 (Using xray-knife, Fixed multiple SyntaxErrors, Improved success pattern parsing)
-
-import requests
-import subprocess
-import os
-import json # Kept for potential future use, though not actively used now
-import tempfile # Kept for potential future use
-import time
-import platform
-import zipfile
-import io
-import stat
-import base64
-from urllib.parse import urlparse, parse_qs, unquote, unquote_plus
-from concurrent.futures import ThreadPoolExecutor, as_completed, Future
-import sys
-import socket
-import re
-import random
-import traceback # For printing detailed tracebacks on errors
-import signal # For graceful shutdown attempt on SIGINT/SIGTERM
-
-# --- Configuration ---
-print("--- Script Configuration ---")
-# Read subscription URLs from GitHub Actions secret
-SOURCE_URLS_RAW = os.environ.get('SOURCE_URLS_SECRET', '')
-SOURCE_URLS_LIST = [url.strip() for url in SOURCE_URLS_RAW.splitlines() if url.strip()]
-
-if not SOURCE_URLS_LIST:
-    print("ERROR: SOURCE_URLS_SECRET environment variable is empty or not set. Please configure the secret.", file=sys.stderr)
-    sys.exit(1) # Exit if no sources are provided
-else:
-    print(f"Loaded {len(SOURCE_URLS_LIST)} URLs from SOURCE_URLS_SECRET.")
-
-# Output directory and filename
-OUTPUT_DIR = "subscription"
-OUTPUT_FILENAME = "working_keys.txt"
-OUTPUT_FILE_PATH = os.path.join(OUTPUT_DIR, OUTPUT_FILENAME)
-print(f"Output file path: {OUTPUT_FILE_PATH}")
-
-# Path for the xray-knife executable
-XRAY_KNIFE_PATH = "./xray-knife"
-print(f"Expected xray-knife path: {XRAY_KNIFE_PATH}")
-
-# Concurrency settings
-MAX_WORKERS = 15 # Adjust based on runner resources and network stability
-print(f"Max worker threads for testing: {MAX_WORKERS}")
-
-# Timeout settings
-REQUEST_TIMEOUT = 25 # Timeout for fetching subscription URLs (increased slightly)
-print(f"Subscription fetch timeout: {REQUEST_TIMEOUT}s")
-TEST_PING_TIMEOUT = 10 # Timeout value passed to the 'xray-knife ping --timeout' flag
-print(f"xray-knife ping --timeout flag: {TEST_PING_TIMEOUT}s")
-SUBPROCESS_TIMEOUT = TEST_PING_TIMEOUT + 5 # Max time for the entire xray-knife subprocess call
-print(f"Subprocess execution timeout: {SUBPROCESS_TIMEOUT}s")
-
-# Early exit configuration
-TARGET_EARLY_EXIT_KEYS = 700 # Stop testing when this many working keys are found
-print(f"Target working keys to stop testing early: {TARGET_EARLY_EXIT_KEYS}")
-
-# Supported key URL protocols (ensure xray-knife ping supports these)
-SUPPORTED_PROTOCOLS = ["vmess://", "vless://", "trojan://", "ss://"]
-print(f"Supported protocols for testing: {SUPPORTED_PROTOCOLS}")
-
-# User-Agent for fetching subscription URLs
-REQUEST_HEADERS = {
-    'User-Agent': f'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36 KeyTester/2.3'
-}
-print(f"Subscription Fetch Headers: {REQUEST_HEADERS}")
-print("--- End Configuration ---")
-
 # --- xray-knife Installation/Verification ---
 def download_and_extract_xray_knife():
     """
@@ -115,27 +36,46 @@ def download_and_extract_xray_knife():
         machine = platform.machine().lower()
         print(f"Detected System: {system}, Machine: {machine}")
 
+        # --- *** CORRECTED ASSET NAME LOGIC *** ---
         asset_name = None
         if system == 'linux':
-            if machine in ['x86_64', 'amd64']: asset_suffix = "linux-amd64.zip"
-            elif machine in ['aarch64', 'arm64']: asset_suffix = "linux-arm64.zip"
-            # Add other architectures if needed and supported by xray-knife
-            else: raise ValueError(f"Unsupported Linux architecture: {machine}")
-            asset_name = f"xray-knife-{asset_suffix}"
-        # Add elif for 'windows', 'darwin' (macOS) if needed
+            if machine in ['x86_64', 'amd64']:
+                # Based on error log, the correct name is Xray-knife-linux-64.zip
+                asset_name = "Xray-knife-linux-64.zip"
+            elif machine in ['aarch64', 'arm64']:
+                # Based on error log, the correct name includes v8a
+                asset_name = "Xray-knife-linux-arm64-v8a.zip"
+            else:
+                raise ValueError(f"Unsupported Linux architecture for xray-knife download: {machine}")
+        # Add elif conditions for other OS like 'windows', 'darwin' if needed,
+        # ensuring the asset names match the release page exactly.
+        # Example for macOS (verify exact names on release page):
+        # elif system == 'darwin':
+        #     if machine in ['x86_64', 'amd64']:
+        #          asset_name = "Xray-knife-macos-64.zip"
+        #     elif machine in ['aarch64', 'arm64']:
+        #          asset_name = "Xray-knife-macos-arm64-v8a.zip" # Verify exact name
+        #     else:
+        #          raise ValueError(f"Unsupported macOS architecture: {machine}")
         else:
-            raise ValueError(f"Unsupported operating system for automatic download: {system}")
+            raise ValueError(f"Unsupported operating system for automatic xray-knife download: {system}")
+        # --- *********************************** ---
+
+        if not asset_name: # Should not happen if OS is supported, but check anyway
+             raise ValueError("Could not determine the correct asset name.")
 
         # Find the download URL for the determined asset name
         asset_url = None
         print(f"Searching for asset: {asset_name}")
+        available_assets = [a.get('name') for a in release_info.get('assets', [])] # Get list for error message
         for asset in release_info.get('assets', []):
             if asset.get('name') == asset_name:
                 asset_url = asset.get('browser_download_url')
                 print(f"Found asset URL: {asset_url}")
                 break
         if not asset_url:
-            raise ValueError(f"Could not find asset '{asset_name}' in release '{tag_name}'. Available assets: {[a.get('name') for a in release_info.get('assets', [])]}")
+            # Provide more helpful error message including available assets
+            raise ValueError(f"Could not find asset '{asset_name}' in release '{tag_name}'. Available assets: {available_assets}")
 
         # Download the asset
         print(f"Downloading {asset_url}...")
@@ -146,144 +86,72 @@ def download_and_extract_xray_knife():
         print(f"Extracting {asset_name}...")
         if asset_name.endswith(".zip"):
             with zipfile.ZipFile(io.BytesIO(download_response.content)) as zf:
+                # The executable name inside the zip is likely still 'xray-knife' (lowercase)
                 exe_name = 'xray-knife.exe' if system == 'windows' else 'xray-knife'
                 extracted = False
                 for member in zf.namelist():
-                    if member.endswith('/'): continue # Skip directories
+                    if member.endswith('/'): continue
                     member_base_name = os.path.basename(member)
-                    # Check if the base name matches the expected executable name
                     if member_base_name == exe_name and not member.startswith('__MACOSX'):
                         print(f"  Found executable member: {member}")
-                        # Extract to the current directory first
                         zf.extract(member, path=".")
                         extracted_path = os.path.normpath(os.path.join(".", member))
                         print(f"  Extracted to: {extracted_path}")
-
-                        # Move/Rename to the target path (XRAY_KNIFE_PATH) if necessary
                         if os.path.abspath(extracted_path) != abs_xray_knife_path:
                             print(f"  Moving/Renaming from {extracted_path} to {abs_xray_knife_path}...")
                             os.makedirs(os.path.dirname(abs_xray_knife_path) or '.', exist_ok=True)
-                            # Remove existing file/link at target path before renaming
                             if os.path.exists(abs_xray_knife_path) or os.path.islink(abs_xray_knife_path):
                                 print(f"  Removing existing file/link at {abs_xray_knife_path}")
                                 os.remove(abs_xray_knife_path)
                             os.rename(extracted_path, abs_xray_knife_path)
                         else:
                             print(f"  Extracted directly to target path: {abs_xray_knife_path}")
-
-                        # Clean up the original extraction directory if it's now empty
                         member_dir = os.path.dirname(member)
                         if member_dir and os.path.exists(os.path.join(".", member_dir)) and not os.listdir(os.path.join(".", member_dir)):
-                            try:
-                                os.rmdir(os.path.join(".", member_dir))
-                                print(f"  Removed empty source directory: {os.path.join('.', member_dir)}")
-                            except OSError as rmdir_e:
-                                print(f"  Warning: Could not remove source directory {os.path.join('.', member_dir)}: {rmdir_e}")
-
+                            try: os.rmdir(os.path.join(".", member_dir)); print(f"  Removed empty source directory: {os.path.join('.', member_dir)}")
+                            except OSError as rmdir_e: print(f"  Warning: Could not remove source directory {os.path.join('.', member_dir)}: {rmdir_e}")
                         print(f"  xray-knife executable placed at '{abs_xray_knife_path}'")
-                        extracted = True
-                        break # Stop after finding the first matching executable
+                        extracted = True; break
+                if not extracted: raise FileNotFoundError(f"'{exe_name}' executable not found within the downloaded zip file '{asset_name}'. Contents: {zf.namelist()}")
+        else: raise NotImplementedError(f"Extraction logic not implemented for asset type: {asset_name}")
+        if not os.path.exists(abs_xray_knife_path): raise FileNotFoundError(f"xray-knife executable not found at '{abs_xray_knife_path}' after extraction attempt.")
 
-                if not extracted:
-                    raise FileNotFoundError(f"'{exe_name}' executable not found within the downloaded zip file '{asset_name}'. Contents: {zf.namelist()}")
-        else:
-            # Add handling for other archive types (.tar.gz, etc.) if needed
-            raise NotImplementedError(f"Extraction logic not implemented for asset type: {asset_name}")
-
-        # Final check for existence after extraction
-        if not os.path.exists(abs_xray_knife_path):
-            raise FileNotFoundError(f"xray-knife executable not found at '{abs_xray_knife_path}' after extraction attempt.")
-
-        # Set execute permissions on Linux/macOS
+        # Set execute permissions (same as before)
         if system != 'windows':
             try:
                 print(f"Setting execute permissions for '{abs_xray_knife_path}'...")
                 current_mode = os.stat(abs_xray_knife_path).st_mode
-                # Add execute permissions for owner, group, and others (u+x, g+x, o+x)
                 new_mode = current_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
-                if current_mode != new_mode:
-                    os.chmod(abs_xray_knife_path, new_mode)
-                    print(f"Permissions set to {oct(new_mode)}.")
-                else:
-                    print("Execute permissions already set.")
-                # Verify execute access
-                if not os.access(abs_xray_knife_path, os.X_OK):
-                    raise OSError("Execute permission check failed after chmod.")
+                if current_mode != new_mode: os.chmod(abs_xray_knife_path, new_mode); print(f"Permissions set to {oct(new_mode)}.")
+                else: print("Execute permissions already set.")
+                if not os.access(abs_xray_knife_path, os.X_OK): raise OSError("Execute permission check failed after chmod.")
             except Exception as chmod_e:
                 print(f"ERROR: Failed to make '{abs_xray_knife_path}' executable: {chmod_e}. Trying fallback...", file=sys.stderr)
-                # Fallback using system chmod command
-                try:
-                    subprocess.run(['chmod', '+x', abs_xray_knife_path], check=True)
-                    print("Fallback chmod +x command succeeded.")
-                    if not os.access(abs_xray_knife_path, os.X_OK):
-                         raise OSError("Execute permission check failed even after fallback chmod.")
-                except Exception as fallback_e:
-                    print(f"ERROR: Fallback chmod failed: {fallback_e}.", file=sys.stderr)
-                    return False # Fail setup if cannot make executable
+                try: subprocess.run(['chmod', '+x', abs_xray_knife_path], check=True); print("Fallback chmod +x command succeeded.")
+                except Exception as fallback_e: print(f"ERROR: Fallback chmod failed: {fallback_e}.", file=sys.stderr); return False
 
-        # Verify the installation by running the version command
+        # Verify installation (same as before)
         print(f"Verifying xray-knife installation by running: {abs_xray_knife_path} -v")
         try:
-            # Run the version command
-            version_process = subprocess.run(
-                [abs_xray_knife_path, "-v"],
-                capture_output=True,
-                text=True,
-                timeout=15, # Timeout for version check
-                check=False, # Don't raise exception on non-zero exit
-                encoding='utf-8',
-                errors='replace'
-            )
-            # Log output for debugging
-            print(f"--- XRAY-KNIFE VERSION OUTPUT ---")
-            print(f"Command: {' '.join(version_process.args)}")
-            print(f"Exit Code: {version_process.returncode}")
-            stdout_strip = version_process.stdout.strip() if version_process.stdout else ""
-            stderr_strip = version_process.stderr.strip() if version_process.stderr else ""
-            print(f"Stdout: {stdout_strip}")
-            if stderr_strip: print(f"Stderr: {stderr_strip}")
-            print(f"--- END XRAY-KNIFE VERSION OUTPUT ---")
-
-            # Check if verification seems successful
-            if version_process.returncode != 0 or "xray-knife" not in stdout_strip.lower():
-                print("Warning: xray-knife version command failed or output did not contain 'xray-knife'. Check output above.", file=sys.stderr)
-                # Decide if this is fatal. For now, allow continuing but log warning.
-            else:
-                print("xray-knife version verified successfully.")
-        except subprocess.TimeoutExpired:
-            print(f"ERROR: Timeout expired while running '{abs_xray_knife_path} -v'.", file=sys.stderr)
-            return False # Verification failed
-        except FileNotFoundError:
-            # This shouldn't happen if the path exists check passed, but handle defensively
-            print(f"ERROR: Cannot execute '{abs_xray_knife_path}' (File not found during verification).", file=sys.stderr)
-            return False # Verification failed
-        except Exception as verify_e:
-            print(f"ERROR: Unexpected error during xray-knife verification: {verify_e}", file=sys.stderr)
-            traceback.print_exc(file=sys.stderr)
-            return False # Verification failed
+            version_process = subprocess.run( [abs_xray_knife_path, "-v"], capture_output=True, text=True, timeout=15, check=False, encoding='utf-8', errors='replace')
+            print(f"--- XRAY-KNIFE VERSION OUTPUT ---"); print(f"Command: {' '.join(version_process.args)}"); print(f"Exit Code: {version_process.returncode}"); stdout_strip = version_process.stdout.strip() if version_process.stdout else ""; stderr_strip = version_process.stderr.strip() if version_process.stderr else ""; print(f"Stdout: {stdout_strip}");
+            if stderr_strip: print(f"Stderr: {stderr_strip}"); print(f"--- END XRAY-KNIFE VERSION OUTPUT ---")
+            if version_process.returncode != 0 or "xray-knife" not in stdout_strip.lower(): print("Warning: xray-knife version command failed or output did not contain 'xray-knife'. Check output above.", file=sys.stderr)
+            else: print("xray-knife version verified successfully.")
+        except subprocess.TimeoutExpired: print(f"ERROR: Timeout expired while running '{abs_xray_knife_path} -v'.", file=sys.stderr); return False
+        except FileNotFoundError: print(f"ERROR: Cannot execute '{abs_xray_knife_path}' (File not found during verification).", file=sys.stderr); return False
+        except Exception as verify_e: print(f"ERROR: Unexpected error during xray-knife verification: {verify_e}", file=sys.stderr); traceback.print_exc(file=sys.stderr); return False
 
         print("xray-knife download and setup appears complete.")
-        return True # Success
+        return True
 
-    # Catch specific exceptions during download/setup
-    except requests.exceptions.RequestException as req_e:
-        print(f"ERROR: Network error during xray-knife download: {req_e}", file=sys.stderr)
-        return False
-    except zipfile.BadZipFile as zip_e:
-        print(f"ERROR: Downloaded file is not a valid ZIP file: {zip_e}", file=sys.stderr)
-        return False
-    except (ValueError, NotImplementedError, FileNotFoundError, OSError) as setup_e:
-        # Catch errors related to unsupported OS/arch, asset finding, extraction, permissions
-        print(f"ERROR: Failed during xray-knife setup: {setup_e}", file=sys.stderr)
-        return False
-    except Exception as e:
-        # Catch any other unexpected errors
-        print(f"ERROR: An unexpected error occurred in download_and_extract_xray_knife: {e}", file=sys.stderr)
-        traceback.print_exc(file=sys.stderr) # Print full traceback for unexpected errors
-        return False
+    except requests.exceptions.RequestException as req_e: print(f"ERROR: Network error during xray-knife download: {req_e}", file=sys.stderr); return False
+    except zipfile.BadZipFile as zip_e: print(f"ERROR: Downloaded file is not a valid ZIP file: {zip_e}", file=sys.stderr); return False
+    except (ValueError, NotImplementedError, FileNotFoundError, OSError) as setup_e: print(f"ERROR: Failed during xray-knife setup: {setup_e}", file=sys.stderr); return False
+    except Exception as e: print(f"ERROR: An unexpected error occurred in download_and_extract_xray_knife: {e}", file=sys.stderr); traceback.print_exc(file=sys.stderr); return False
 
-
-# --- Key Testing Function (using xray-knife ping) ---
+# --- (ကျန် Function များ unverändert) ---
+# Key Testing Function (using xray-knife ping)
 def test_v2ray_key(key_url):
     """
     Tests a single V2Ray/Xray key URL using the 'xray-knife ping' command.
@@ -326,8 +194,6 @@ def test_v2ray_key(key_url):
     cmd = [
         abs_xray_knife_path, "ping", "link", key_url,
         "--timeout", str(TEST_PING_TIMEOUT) + "s",
-        # Add flags based on xray-knife capabilities if needed, e.g. for different ping types
-        # '--mode', 'tcp' # Example: force TCP ping if needed
     ]
 
     try:
@@ -339,7 +205,6 @@ def test_v2ray_key(key_url):
         stderr_data = process.stderr.strip() if process.stderr else ""
 
         # --- Determine Success/Failure ---
-        # Success Criteria: Exit code 0 AND stdout contains "Success," followed by RTT or Delay and ms value.
         success_pattern = r'Success,.*(RTT|Delay):\s*\d+ms'
 
         if process.returncode == 0 and re.search(success_pattern, stdout_data, re.IGNORECASE):
@@ -372,12 +237,11 @@ def test_v2ray_key(key_url):
              if stderr_data and "timeout" not in final_fail_reason.lower() and "exit code" not in final_fail_reason.lower(): log_message += f" | Stderr: {stderr_data.splitlines()[0]}"[:150]
              print(log_message, file=sys.stderr)
 
-
 # --- Main Execution Logic ---
 def main():
     """Main function to orchestrate the key fetching, testing, and saving."""
     script_start_time = time.time()
-    print(f"\n=== Starting Key Tester Script (v2.3 - using xray-knife) at {time.strftime('%Y-%m-%d %H:%M:%S %Z')} ===")
+    print(f"\n=== Starting Key Tester Script (v2.4 - using xray-knife, fixed asset name) at {time.strftime('%Y-%m-%d %H:%M:%S %Z')} ===") # Updated version marker
 
     # --- Step 1: Setup xray-knife ---
     if not download_and_extract_xray_knife(): print("FATAL: Failed to setup xray-knife. Exiting.", file=sys.stderr); sys.exit(1)
@@ -415,14 +279,11 @@ def main():
 
     # --- Check if any keys were fetched ---
     print(f"\nFinished fetching. Total non-empty lines fetched: {total_lines_fetched}. Source URL fetch errors: {fetch_errors}.")
-    # Corrected block for handling no fetched keys
     if not all_fetched_keys_raw:
         print("Error: No key lines were fetched from any source URL. Writing empty output file.", file=sys.stderr)
         try:
-            with open(OUTPUT_FILE_PATH, 'w') as f: pass
-            print(f"Created empty output file: {OUTPUT_FILE_PATH}")
-        except IOError as e_f:
-            print(f"Warning: Could not create empty output file {OUTPUT_FILE_PATH}: {e_f}", file=sys.stderr)
+            with open(OUTPUT_FILE_PATH, 'w') as f: pass; print(f"Created empty output file: {OUTPUT_FILE_PATH}")
+        except IOError as e_f: print(f"Warning: Could not create empty output file {OUTPUT_FILE_PATH}: {e_f}", file=sys.stderr)
         print(f"Exiting script. Fetch errors: {fetch_errors}, Total sources: {len(SOURCE_URLS_LIST)}")
         sys.exit(0 if fetch_errors < len(SOURCE_URLS_LIST) else 1)
 
@@ -450,28 +311,15 @@ def main():
 
     # --- Step 5: Test Unique Keys Concurrently ---
     print("\n--- Step 5: Testing Unique Keys Concurrently ---")
-    # Corrected block for handling no unique keys found *after* processing
     if not unique_keys_list:
         print("No unique valid keys found to test after processing. Writing empty file.")
         try:
-            # Attempt to create an empty file as output since there's nothing to test
-            with open(OUTPUT_FILE_PATH, 'w') as f:
-                 pass # Creates or truncates the file
-            print(f"Created empty output file: {OUTPUT_FILE_PATH}")
-        except IOError as e_f:
-            # Error creating the empty file
-            print(f"Warning: Could not create empty output file {OUTPUT_FILE_PATH}: {e_f}", file=sys.stderr)
-        # Exit gracefully with code 0, as this is not an error state, just nothing to do.
+            with open(OUTPUT_FILE_PATH, 'w') as f: pass; print(f"Created empty output file: {OUTPUT_FILE_PATH}")
+        except IOError as e_f: print(f"Warning: Could not create empty output file {OUTPUT_FILE_PATH}: {e_f}", file=sys.stderr)
         sys.exit(0)
-
-    # Continue with testing if unique_keys_list is not empty
-    print(f"Starting tests for {len(unique_keys_list)} unique keys...")
-    print(f"(Target working keys for early exit: {TARGET_EARLY_EXIT_KEYS})")
-    print(f"(Max Workers: {MAX_WORKERS}, Ping Timeout: {TEST_PING_TIMEOUT}s per key)")
-
+    print(f"Starting tests for {len(unique_keys_list)} unique keys..."); print(f"(Target working keys for early exit: {TARGET_EARLY_EXIT_KEYS})"); print(f"(Max Workers: {MAX_WORKERS}, Ping Timeout: {TEST_PING_TIMEOUT}s per key)")
     all_working_keys = []; tested_count = 0; start_test_time = time.time(); futures_cancelled = 0; stop_early = False
-    random.shuffle(unique_keys_list) # Shuffle keys to test in random order
-
+    random.shuffle(unique_keys_list)
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
         future_to_key = {executor.submit(test_v2ray_key, key): key for key in unique_keys_list}; active_futures = list(future_to_key.keys())
         for future in as_completed(active_futures):
