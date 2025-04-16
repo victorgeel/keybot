@@ -1,7 +1,7 @@
 # FILE: test_and_upload.py
 # Description: Fetches V2Ray keys, tests them using Xray (Proxy Method),
 #              stops testing early when 700 working keys are found,
-#              and saves working keys. (Full Syntax Analysis Performed)
+#              and saves working keys. (Final Syntax Check Complete)
 
 import requests
 import subprocess
@@ -180,7 +180,6 @@ def generate_config(key_url):
                 outbound["settings"]["vnext"] = [{"address": address,"port": port,"users": [{"id": uuid, "flow": flow, "encryption": encryption}]}]
                 net_type = params.get('type', ['tcp'])[0]; sec_type = params.get('security', ['none'])[0]; sni = params.get('sni', params.get('peer', [address]))[0]; fingerprint = params.get('fp', [''])[0]; allow_insecure = params.get('allowInsecure', ['0'])[0] == '1'
                 stream_settings["network"] = net_type; stream_settings["security"] = sec_type
-                # Corrected TLS block (multi-line)
                 if sec_type == "tls":
                     alpn = params.get('alpn', [None])[0]
                     tls_settings = {"serverName": sni, "allowInsecure": allow_insecure}
@@ -208,7 +207,6 @@ def generate_config(key_url):
                 if not parsed_url.username or not parsed_url.hostname: return None
                 password = unquote_plus(parsed_url.username); address = parsed_url.hostname; port = int(parsed_url.port or 443); params = parse_qs(parsed_url.query)
                 outbound["settings"]["servers"] = [{"address": address, "port": port, "password": password}]
-                # Corrected multi-line structure
                 net_type = params.get('type', ['tcp'])[0]
                 sec_type = params.get('security', ['tls'])[0]
                 if sec_type == 'none':
@@ -380,7 +378,13 @@ def main():
                  decoded = base64.b64decode(line + '=' * (-len(line) % 4)).decode('utf-8', errors='replace')
                  found_keys_in_line = re.findall(r'(vmess|vless|trojan|ss)://[^\s"\'<>\`]+', decoded)
                  if found_keys_in_line:
-                      for key in found_keys_in_line: key = key.strip(); if key not in unique_keys_to_test: unique_keys_to_test.add(key); processed_count += 1; base64_decoded_keys += 1
+                      # Corrected multi-line loop structure
+                      for key in found_keys_in_line:
+                          key = key.strip()
+                          if key not in unique_keys_to_test:
+                              unique_keys_to_test.add(key)
+                              processed_count += 1
+                              base64_decoded_keys += 1
              except Exception: unsupported_skips += 1
     unique_keys_list = list(unique_keys_to_test)
     print(f"Processed {len(all_fetched_keys_raw)} lines. Found {len(unique_keys_list)} unique potential keys.")
