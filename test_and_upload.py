@@ -1,7 +1,7 @@
 # FILE: test_and_upload.py
 # Description: Fetches V2Ray keys, tests them using Xray (Proxy Method),
 #              stops testing early when 700 working keys are found,
-#              and saves working keys.
+#              and saves working keys. (Syntax Fix Applied)
 
 import requests
 import subprocess
@@ -50,7 +50,7 @@ print(f"Subscription fetch timeout: {REQUEST_TIMEOUT}s")
 TEST_PROXY_TIMEOUT = 10
 print(f"Proxy test request timeout: {TEST_PROXY_TIMEOUT}s")
 
-TARGET_EARLY_EXIT_KEYS = 700 # <--- Change: Limit ကို 700 သို့ ပြောင်းလဲထားသည်
+TARGET_EARLY_EXIT_KEYS = 700 # Stop testing when this many working keys are found
 print(f"Target working keys to stop testing early: {TARGET_EARLY_EXIT_KEYS}")
 
 SUPPORTED_PROTOCOLS = ["vmess://", "vless://", "trojan://", "ss://"]
@@ -65,7 +65,7 @@ TEST_URLS = [
 ]
 print(f"Proxy test URLs: {TEST_URLS}")
 REQUEST_HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36 KeyTester/1.7' # Version bump
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36 KeyTester/1.7'
 }
 print(f"Request Headers: {REQUEST_HEADERS}")
 print("--- End Configuration ---")
@@ -149,7 +149,6 @@ def download_and_extract_xray():
 
 
 # --- Config Generation ---
-# Removed DEBUG prints from here for cleaner output
 def generate_config(key_url):
     """Generates an Xray JSON configuration for proxy testing."""
     try:
@@ -158,7 +157,8 @@ def generate_config(key_url):
         parsed_url = urlparse(key_url); protocol = parsed_url.scheme
         base_config = {"log": {"loglevel": "warning"},"inbounds": [{"port": PROXY_PORT,"protocol": "socks","settings": {"auth": "noauth", "udp": True, "ip": "127.0.0.1"},"listen": "127.0.0.1"}],"outbounds": [{"protocol": protocol, "settings": {}, "streamSettings": {}}]}
         outbound = base_config["outbounds"][0]; stream_settings = outbound["streamSettings"]; config = None
-        # --- Protocol Parsing Logic ---
+
+        # --- VMess ---
         if protocol == "vmess":
             try:
                 vmess_b64 = key_url[len("vmess://"):]; vmess_b64 += '=' * (-len(vmess_b64) % 4)
@@ -173,6 +173,8 @@ def generate_config(key_url):
                 elif net_type == "grpc": service_name = vmess_params.get("path", ""); mode = vmess_params.get("mode", "gun"); stream_settings["grpcSettings"] = {"serviceName": service_name, "multiMode": mode == "multi"}
                 config = base_config
             except Exception: return None
+
+        # --- VLESS --- (Syntax Error Fix Applied)
         elif protocol == "vless":
             try:
                 if not parsed_url.username or not parsed_url.hostname: return None
@@ -180,46 +182,43 @@ def generate_config(key_url):
                 outbound["settings"]["vnext"] = [{"address": address,"port": port,"users": [{"id": uuid, "flow": flow, "encryption": encryption}]}]
                 net_type = params.get('type', ['tcp'])[0]; sec_type = params.get('security', ['none'])[0]; sni = params.get('sni', params.get('peer', [address]))[0]; fingerprint = params.get('fp', [''])[0]; allow_insecure = params.get('allowInsecure', ['0'])[0] == '1'
                 stream_settings["network"] = net_type; stream_settings["security"] = sec_type
-
-                # <--- Fix SyntaxError Area Start ---
                 if sec_type == "tls":
                     alpn = params.get('alpn', [None])[0]
                     tls_settings = {"serverName": sni, "allowInsecure": allow_insecure}
-                    # Ensure realitySettings is removed if sec_type is explicitly tls
-                    stream_settings.pop("realitySettings", None) # Safe pop
-                    if fingerprint:
-                        tls_settings["fingerprint"] = fingerprint # Only add if present
-                    if alpn:
-                        # Split ALPN string and strip whitespace
-                        tls_settings["alpn"] = [p.strip() for p in alpn.split(',') if p.strip()]
-                    # Assign the created/updated dictionary to stream_settings
-                    stream_settings["tlsSettings"] = tls_settings
-                # <--- Fix SyntaxError Area End ---
-
+                    stream_settings.pop("realitySettings", None)
+                    if fingerprint: tls_settings["fingerprint"] = fingerprint
+                    if alpn: tls_settings["alpn"] = [p.strip() for p in alpn.split(',') if p.strip()]
+                    stream_settings["tlsSettings"] = tls_settings # Corrected: Assign dict
                 elif sec_type == "reality":
                     pbk = params.get('pbk', [''])[0]; sid = params.get('sid', [''])[0]; spx = unquote_plus(params.get('spx', ['/'])[0])
-                    # Ensure tlsSettings is removed if reality is used
-                    stream_settings.pop("tlsSettings", None) # Safe pop
-                    if not pbk or not sid: return None # REALITY requires pbk and sid
-                    reality_server_name = sni if sni else address
-                    reality_fp = fingerprint if fingerprint else "chrome" # Default to chrome if not provided
-                    stream_settings["realitySettings"] = {"serverName": reality_server_name,"fingerprint": reality_fp,"shortId": sid,"publicKey": pbk,"spiderX": spx}
-                else: # Handle 'none' security or others
                     stream_settings.pop("tlsSettings", None)
-                    stream_settings.pop("realitySettings", None)
-
+                    if not pbk or not sid: return None
+                    reality_server_name = sni if sni else address; reality_fp = fingerprint if fingerprint else "chrome"
+                    stream_settings["realitySettings"] = {"serverName": reality_server_name,"fingerprint": reality_fp,"shortId": sid,"publicKey": pbk,"spiderX": spx}
+                else:
+                    stream_settings.pop("tlsSettings", None); stream_settings.pop("realitySettings", None)
                 host = params.get('host', [address])[0]; path = unquote_plus(params.get('path', ['/'])[0]); service_name = unquote_plus(params.get('serviceName', [''])[0]); mode = params.get('mode', ['gun'])[0]
                 if net_type == "ws": stream_settings["wsSettings"] = {"path": path, "headers": {"Host": host}}
                 elif net_type == "grpc": stream_settings["grpcSettings"] = {"serviceName": service_name, "multiMode": mode == "multi"}
                 elif net_type == "tcp" and params.get('headerType', ['none'])[0] == 'http': host_list = [h.strip() for h in host.split(',') if h.strip()] or [address]; path_list = [path]; stream_settings["tcpSettings"] = {"header": {"type": "http", "request": {"path": path_list, "headers": {"Host": host_list}}}}
                 config = base_config
             except Exception: return None
+
+        # --- Trojan --- (Syntax Error Fix Applied)
         elif protocol == "trojan":
             try:
                 if not parsed_url.username or not parsed_url.hostname: return None
                 password = unquote_plus(parsed_url.username); address = parsed_url.hostname; port = int(parsed_url.port or 443); params = parse_qs(parsed_url.query)
                 outbound["settings"]["servers"] = [{"address": address, "port": port, "password": password}]
-                net_type = params.get('type', ['tcp'])[0]; sec_type = params.get('security', ['tls'])[0]; if sec_type == 'none': sec_type = 'tls'
+
+                # <--- Fix SyntaxError Area Start ---
+                net_type = params.get('type', ['tcp'])[0]
+                # Default security to 'tls' for Trojan if not specified or 'none'
+                sec_type = params.get('security', ['tls'])[0]
+                if sec_type == 'none': # Trojan အတွက် security 'none' ဖြစ်နေရင် 'tls' လို့ပဲ သတ်မှတ်လိုက်ပါ
+                    sec_type = 'tls'
+                # <--- Fix SyntaxError Area End ---
+
                 sni = params.get('sni', params.get('peer', [address]))[0]; fingerprint = params.get('fp', [''])[0]; allow_insecure = params.get('allowInsecure', ['0'])[0] == '1'; alpn = params.get('alpn', [None])[0]
                 stream_settings["network"] = net_type; stream_settings["security"] = sec_type
                 if sec_type == "tls":
@@ -233,12 +232,15 @@ def generate_config(key_url):
                     if fingerprint: tls_settings["fingerprint"] = fingerprint
                     if alpn: tls_settings["alpn"] = [p.strip() for p in alpn.split(',') if p.strip()]
                     stream_settings["tlsSettings"] = tls_settings
+
                 host = params.get('host', [address])[0]; path = unquote_plus(params.get('path', ['/'])[0]); service_name = unquote_plus(params.get('serviceName', [''])[0]); mode = params.get('mode', ['gun'])[0]
                 if net_type == "ws": stream_settings["wsSettings"] = {"path": path, "headers": {"Host": host}}
                 elif net_type == "grpc": stream_settings["grpcSettings"] = {"serviceName": service_name, "multiMode": mode=="multi"}
                 elif net_type == "tcp" and params.get('headerType', ['none'])[0] == 'http': host_list = [h.strip() for h in host.split(',') if h.strip()] or [address]; path_list = [path]; stream_settings["tcpSettings"] = {"header": {"type": "http","request": { "path": path_list, "headers": { "Host": host_list } }}}
                 config = base_config
             except Exception: return None
+
+        # --- Shadowsocks (SS) ---
         elif protocol == "ss":
             try:
                 password = None; method = None; address = None; port = None; remark = None
@@ -266,6 +268,7 @@ def generate_config(key_url):
                 config = base_config
             except Exception: return None
         else: return None # Unsupported protocol
+
         if config:
             if outbound.get("streamSettings"):
                  for key in list(stream_settings.keys()):
@@ -342,7 +345,6 @@ def main():
     # --- Step 3: Fetch Keys ---
     print("\n--- Step 3: Fetching Keys ---")
     all_fetched_keys_raw = []; fetch_errors = 0; total_lines_fetched = 0
-    # --- Fetching logic (same as before) ---
     for index, url in enumerate(SOURCE_URLS_LIST):
         print(f"\nFetching from URL {index+1}/{len(SOURCE_URLS_LIST)}: {url[:100]}...")
         try:
@@ -368,7 +370,6 @@ def main():
     # --- Step 4: Process Keys ---
     print("\n--- Step 4: Processing/Deduplicating Keys ---")
     unique_keys_to_test = set(); processed_count = 0; decode_attempts = 0; base64_decoded_keys = 0; unsupported_skips = 0
-    # --- Processing logic (same as before) ---
     for line in all_fetched_keys_raw:
          if any(line.startswith(proto) for proto in SUPPORTED_PROTOCOLS):
               if line not in unique_keys_to_test: unique_keys_to_test.add(line); processed_count += 1
@@ -392,7 +393,7 @@ def main():
          except IOError as e_f: print(f"Warning: Cannot create empty file: {e_f}", file=sys.stderr)
          sys.exit(0)
 
-    print(f"Starting tests for {len(unique_keys_list)} keys (will stop early at {TARGET_EARLY_EXIT_KEYS} working)...") # Uses the updated limit
+    print(f"Starting tests for {len(unique_keys_list)} keys (will stop early at {TARGET_EARLY_EXIT_KEYS} working)...")
     print(f"(Max Workers: {MAX_WORKERS}, Proxy Test Timeout: {TEST_PROXY_TIMEOUT}s)")
 
     all_working_keys = []
@@ -408,12 +409,9 @@ def main():
         active_futures = list(future_to_key.keys())
 
         for future in as_completed(active_futures):
-            # Break immediately if stop_early flag is set by another finishing thread
             if stop_early:
-                # Try to cancel this future if it wasn't done yet (might be too late)
-                if not future.done():
-                    future.cancel()
-                continue # Skip processing result
+                if not future.done(): future.cancel()
+                continue
 
             key_original = future_to_key[future]
             tested_count += 1
@@ -422,10 +420,8 @@ def main():
                 if is_working:
                     all_working_keys.append(key_original)
                     found_count = len(all_working_keys)
-
-                    # Check if early exit condition is met
-                    if found_count >= TARGET_EARLY_EXIT_KEYS: # Use the updated limit
-                        if not stop_early: # Check flag again to prevent multiple cancel attempts
+                    if found_count >= TARGET_EARLY_EXIT_KEYS:
+                        if not stop_early:
                             stop_early = True
                             print(f"\nTarget of {TARGET_EARLY_EXIT_KEYS} working keys reached! Stopping testing early.")
                             print("Attempting to cancel remaining pending tests...")
@@ -435,24 +431,16 @@ def main():
                                     if f.cancel(): cancelled_now += 1
                             futures_cancelled = cancelled_now
                             print(f"Attempted to cancel {futures_cancelled} tests.")
-                            # No need to break here immediately, let the outer loop check stop_early
-
             except Exception as e_future:
                 print(f"Warning: Error processing test result for key {key_original[:40]}...: {e_future}", file=sys.stderr)
 
-            # Print progress update periodically or when stopping
             if tested_count % 50 == 0 or tested_count == len(unique_keys_list) or stop_early:
                  current_time = time.time(); elapsed = current_time - start_test_time; rate = tested_count / elapsed if elapsed > 0 else 0
                  progress_message = f"Progress: Tested {tested_count}/{len(unique_keys_list)} | Found: {len(all_working_keys)} | Rate: {rate:.1f} keys/s | Elapsed: {elapsed:.0f}s"
                  if stop_early: progress_message += " (Stopping Early)"
-                 # Use print to avoid overlapping lines when stopping early
                  print(progress_message)
-            # else: # Overwrite line during normal progress
-            #      print(progress_message, end='\r')
 
-            # Now break if the flag was set in this iteration
-            if stop_early:
-                 break
+            if stop_early: break
 
     print(f"\nFinished testing phase. Tested {tested_count} keys before stopping.")
     test_duration = time.time() - start_test_time
@@ -461,15 +449,14 @@ def main():
     # --- Step 6: Write Results ---
     print("\n--- Step 6: Writing Results ---")
     num_working_found = len(all_working_keys)
-    print(f"Total working keys collected: {num_working_found} (Target was {TARGET_EARLY_EXIT_KEYS})") # Use updated limit
+    print(f"Total working keys collected: {num_working_found} (Target was {TARGET_EARLY_EXIT_KEYS})")
 
     random.shuffle(all_working_keys)
     print(f"Shuffled {num_working_found} working keys.")
 
-    # Apply FINAL limit (using the same target variable)
-    if num_working_found > TARGET_EARLY_EXIT_KEYS: # Use updated limit
-        print(f"Limiting final output to {TARGET_EARLY_EXIT_KEYS} keys.") # Use updated limit
-        keys_to_write = all_working_keys[:TARGET_EARLY_EXIT_KEYS] # Use updated limit
+    if num_working_found > TARGET_EARLY_EXIT_KEYS:
+        print(f"Limiting final output to {TARGET_EARLY_EXIT_KEYS} keys.")
+        keys_to_write = all_working_keys[:TARGET_EARLY_EXIT_KEYS]
     else:
         keys_to_write = all_working_keys
 
@@ -489,7 +476,7 @@ def main():
     print("\n--- Script Summary ---")
     script_end_time = time.time(); total_script_time = script_end_time - script_start_time
     print(f"Total working keys COLLECTED: {num_working_found}")
-    print(f"Total working keys WRITTEN (limit: {TARGET_EARLY_EXIT_KEYS}): {num_keys_to_write}") # Use updated limit
+    print(f"Total working keys WRITTEN (limit: {TARGET_EARLY_EXIT_KEYS}): {num_keys_to_write}")
     print(f"Output file: {os.path.abspath(OUTPUT_FILE_PATH)}")
     print(f"Script finished in {total_script_time:.2f} seconds.")
     print("======================================================")
@@ -497,3 +484,4 @@ def main():
 # --- Entry Point ---
 if __name__ == "__main__":
     main()
+
