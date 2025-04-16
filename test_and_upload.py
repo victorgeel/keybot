@@ -1,7 +1,7 @@
 # FILE: test_and_upload.py
 # Description: Fetches V2Ray keys, tests them using Xray (Proxy Method),
 #              stops testing early when 700 working keys are found,
-#              and saves working keys. (SS Parse Fix + Enhanced Debugging)
+#              and saves working keys. (Multiple Syntax Fixes Confirmed)
 
 import requests
 import subprocess
@@ -48,7 +48,7 @@ print(f"Max worker threads: {MAX_WORKERS}")
 REQUEST_TIMEOUT = 20
 print(f"Subscription fetch timeout: {REQUEST_TIMEOUT}s")
 
-TEST_PROXY_TIMEOUT = 10 # Keep timeout, adjust if needed after fixing SOCKS
+TEST_PROXY_TIMEOUT = 10
 print(f"Proxy test request timeout: {TEST_PROXY_TIMEOUT}s")
 
 TARGET_EARLY_EXIT_KEYS = 700 # Stop testing when this many working keys are found
@@ -66,7 +66,7 @@ TEST_URLS = [
 ]
 print(f"Proxy test URLs: {TEST_URLS}")
 REQUEST_HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36 KeyTester/1.8' # Version bump
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36 KeyTester/1.8'
 }
 print(f"Request Headers: {REQUEST_HEADERS}")
 print("--- End Configuration ---")
@@ -74,7 +74,6 @@ print("--- End Configuration ---")
 # --- Xray Installation ---
 def download_and_extract_xray():
     """Downloads and extracts the latest Xray core binary using GitHub token."""
-    # --- (Function unchanged from previous version) ---
     print("Checking/Downloading Xray...")
     abs_xray_path = os.path.abspath(XRAY_PATH)
     if os.path.exists(abs_xray_path) and os.access(abs_xray_path, os.X_OK):
@@ -211,7 +210,7 @@ def generate_config(key_url):
                     if fingerprint: tls_settings["fingerprint"] = fingerprint
                     if alpn: tls_settings["alpn"] = [p.strip() for p in alpn.split(',') if p.strip()]
                     stream_settings["tlsSettings"] = tls_settings
-                elif sec_type != "none": # Treat other types as TLS for Trojan
+                elif sec_type != "none":
                     stream_settings["security"] = "tls"; tls_settings = {"serverName": sni, "allowInsecure": allow_insecure}
                     if fingerprint: tls_settings["fingerprint"] = fingerprint
                     if alpn: tls_settings["alpn"] = [p.strip() for p in alpn.split(',') if p.strip()]
@@ -222,25 +221,21 @@ def generate_config(key_url):
                 elif net_type == "tcp" and params.get('headerType', ['none'])[0] == 'http': host_list = [h.strip() for h in host.split(',') if h.strip()] or [address]; path_list = [path]; stream_settings["tcpSettings"] = {"header": {"type": "http","request": { "path": path_list, "headers": { "Host": host_list } }}}
                 config = base_config
             except Exception as e_trojan: print(f"DEBUG: Trojan FAIL (Unexpected Error: {e_trojan}): {key_url[:70]}..."); traceback.print_exc(file=sys.stderr); return None
-        # --- Shadowsocks (SS) - FIX for port parsing ---
+        # --- Shadowsocks (SS) ---
         elif protocol == "ss":
             try:
                 password = None; method = None; address = None; port = None; remark = None
-                # 1. Separate remark first
                 if '#' in key_url: key_url_no_remark, remark = key_url.split('#', 1)
                 else: key_url_no_remark = key_url
                 link_part = key_url_no_remark[len("ss://"):]
-                # 2. Check for '@'
                 if '@' in link_part:
                     user_info, host_info = link_part.split('@', 1)
-                    # 3a. Parse host_info (hostname:port) - FIX: Handle query params before splitting port
                     host_part = host_info
-                    if '?' in host_info: host_part, _ = host_info.split('?', 1) # Separate query string, ignore it for host:port
+                    if '?' in host_info: host_part, _ = host_info.split('?', 1)
                     if ':' not in host_part: print(f"DEBUG: SS FAIL (host_part missing port): {host_part} in {key_url[:70]}"); return None
-                    address, port_str = host_part.rsplit(':', 1) # Split host and port
+                    address, port_str = host_part.rsplit(':', 1)
                     try: port = int(port_str)
                     except ValueError: print(f"DEBUG: SS FAIL (invalid port): {port_str} in {key_url[:70]}"); return None
-                    # 3b. Parse user_info (try base64 first, then plain)
                     try:
                         user_info_padded = user_info + '=' * (-len(user_info) % 4); decoded_user_info = base64.urlsafe_b64decode(user_info_padded).decode('utf-8', errors='replace')
                         if ':' in decoded_user_info: method, password = decoded_user_info.split(':', 1)
@@ -248,29 +243,26 @@ def generate_config(key_url):
                     except Exception:
                          if ':' in user_info: method, password = user_info.split(':', 1)
                          else: print(f"DEBUG: SS FAIL (Invalid user info format): {user_info} in {key_url[:70]}"); return None
-                else: # 4. No '@', assume Format 3: ss://BASE64(method:password@hostname:port)
+                else: # Format 3
                      try:
                          full_b64 = link_part + '=' * (-len(link_part) % 4); decoded_full = base64.urlsafe_b64decode(full_b64).decode('utf-8', errors='replace')
                          if '@' in decoded_full and ':' in decoded_full.split('@')[0] and ':' in decoded_full.split('@')[1]:
                               user_info_part, server_part = decoded_full.split('@', 1)
-                              # FIX: Handle query params if present in decoded server_part
                               host_part_decoded = server_part
                               if '?' in server_part: host_part_decoded, _ = server_part.split('?', 1)
                               if ':' not in host_part_decoded: print(f"DEBUG: SS FAIL (decoded host_part missing port): {host_part_decoded} in {key_url[:70]}"); return None
                               method, password = user_info_part.split(':', 1)
                               address, port_str = host_part_decoded.rsplit(':', 1)
-                              port = int(port_str) # Will raise ValueError if port_str is invalid
+                              port = int(port_str)
                          else: print(f"DEBUG: SS FAIL (Decoded Base64 (Format 3) wrong structure): {decoded_full[:50]}... in {key_url[:70]}"); return None
                      except ValueError: print(f"DEBUG: SS FAIL (Invalid port in decoded Base64): {port_str} in {key_url[:70]}"); return None
                      except Exception as e_ss3: print(f"DEBUG: SS FAIL (Failed to decode/parse Format 3 Base64: {e_ss3}): {key_url[:70]}"); return None
-                # 5. Final check
                 if not all([password is not None, method, address, port is not None]): print(f"DEBUG: SS FAIL (Extraction failed - missing parts): {key_url[:70]}"); return None
-                # 6. Construct outbound
                 outbound["settings"]["servers"] = [{"address": address,"port": port,"method": method,"password": password,"uot": True}]; stream_settings["network"] = "tcp"; stream_settings["security"] = "none"
                 for key in ["tlsSettings", "realitySettings", "wsSettings", "grpcSettings", "tcpSettings", "kcpSettings", "quicSettings"]: stream_settings.pop(key, None)
                 config = base_config
             except Exception as e_ss: print(f"DEBUG: SS FAIL (Unexpected Error: {e_ss}): {key_url[:70]}..."); traceback.print_exc(file=sys.stderr); return None
-        else: return None # Unsupported protocol
+        else: return None
 
         if config:
             if outbound.get("streamSettings"):
@@ -300,7 +292,7 @@ def test_v2ray_key(key_url):
              if not port: port = {'vmess': 443, 'vless': 443, 'trojan': 443, 'ss': 8388}.get(parsed.scheme, 443)
         if not host: return key_url, False
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM); s.settimeout(3.0); s.connect((host, port)); s.close()
-    except (socket.gaierror, socket.timeout, ConnectionRefusedError, OSError) as e_pre: pass # Don't fail here, let main test try
+    except (socket.gaierror, socket.timeout, ConnectionRefusedError, OSError): pass # Don't fail here
     except Exception as e_pre_other: print(f"Warning: Pre-check error {key_url[:30]}: {e_pre_other}", file=sys.stderr); pass
 
     temp_config_file = None; xray_proc = None; is_working = False
@@ -311,7 +303,8 @@ def test_v2ray_key(key_url):
         with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix=".xray.json", encoding='utf-8') as tf:
             tf.write(config_json); temp_config_file = tf.name
         cmd = [os.path.abspath(XRAY_PATH), "run", "-config", temp_config_file]
-        xray_proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding='utf-8', errors='replace', start_new_session=True) # start_new_session for better cleanup
+        # Use start_new_session=True to create a process group for easier termination
+        xray_proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding='utf-8', errors='replace', start_new_session=True)
         time.sleep(2.5) # Wait for xray to start
 
         if xray_proc.poll() is not None: # Check if xray exited early
@@ -347,25 +340,35 @@ def test_v2ray_key(key_url):
         if xray_proc:
             pid = xray_proc.pid
             if xray_proc.poll() is None:
-                # print(f"DEBUG: Terminating Xray PID {pid} for Key: {key_url[:50]}...") # Reduced verbosity
-                try: os.killpg(os.getpgid(pid), signal.SIGTERM); time.sleep(0.5);
-                except (ProcessLookupError, PermissionError, AttributeError): pass # Ignore if already gone or not supported
-                if xray_proc.poll() is None: # Check again
-                     try: os.killpg(os.getpgid(pid), signal.SIGKILL)
-                     except Exception: pass # Ignore kill errors
+                # print(f"DEBUG: Terminating Xray PID {pid} for Key: {key_url[:50]}...")
+                try:
+                    # Kill process group using signal
+                    os.killpg(os.getpgid(pid), signal.SIGTERM)
+                    time.sleep(0.2) # Shorter sleep
+                    if xray_proc.poll() is None:
+                         os.killpg(os.getpgid(pid), signal.SIGKILL)
+                except (ProcessLookupError, PermissionError, AttributeError): # Fallback for non-Linux or errors
+                     try: xray_proc.terminate(); xray_proc.wait(timeout=0.5)
+                     except Exception:
+                          try: xray_proc.kill(); xray_proc.wait(timeout=0.5)
+                          except Exception: pass # Ignore final cleanup errors
             # Capture final stderr only if test failed
             if not is_working:
                 try:
                     stderr_final = ""
                     if xray_proc.stderr: stderr_final = xray_proc.stderr.read()
+                    # Use final stderr if available, otherwise keep early exit stderr if captured
                     xray_stderr_output = stderr_final.strip() if stderr_final else xray_stderr_output
                 except Exception: pass # Ignore errors reading stderr
 
         # Print failure details only if it failed
         if not is_working:
-             print(f"DEBUG: Test FAIL Key: {key_url[:70]}... Reason: {final_fail_reason}", file=sys.stderr)
+             # Shorten the key URL in debug message for readability
+             print(f"DEBUG: Test FAIL Key: {key_url[:50]}... Reason: {final_fail_reason}", file=sys.stderr)
              if xray_stderr_output and "signal: terminated" not in xray_stderr_output.lower() and "signal: killed" not in xray_stderr_output.lower():
-                  print(f"DEBUG: Xray Stderr: {xray_stderr_output[:500]}...", file=sys.stderr)
+                  # Print only first few lines of stderr to avoid flooding logs
+                  stderr_lines = xray_stderr_output.splitlines()
+                  print(f"DEBUG: Xray Stderr: {' | '.join(stderr_lines[:3])}"[:500] + "...", file=sys.stderr)
 
         if temp_config_file and os.path.exists(temp_config_file):
             try: os.remove(temp_config_file)
@@ -374,16 +377,21 @@ def test_v2ray_key(key_url):
 
 # --- Main Execution Logic ---
 def main():
-    # --- (Steps 1-4 remain the same as previous version) ---
     script_start_time = time.time()
     print(f"\n=== Starting Key Tester Script at {time.strftime('%Y-%m-%d %H:%M:%S %Z')} ===")
+
+    # --- Step 1: Setup Xray ---
     print("\n--- Step 1: Setting up Xray ---")
     if not download_and_extract_xray(): print("FATAL: Failed to setup Xray.", file=sys.stderr); sys.exit(1)
     if not os.path.exists(XRAY_PATH) or not os.access(XRAY_PATH, os.X_OK): print(f"FATAL: Xray not ready at {os.path.abspath(XRAY_PATH)}.", file=sys.stderr); sys.exit(1)
     print(f"Confirmed Xray executable: {os.path.abspath(XRAY_PATH)}")
+
+    # --- Step 2: Prepare Output Directory ---
     print(f"\n--- Step 2: Preparing Output Directory ({OUTPUT_DIR}) ---")
     try: os.makedirs(OUTPUT_DIR, exist_ok=True); print(f"Output directory '{OUTPUT_DIR}' ensured.")
     except OSError as e: print(f"FATAL: Could not create output directory {OUTPUT_DIR}: {e}", file=sys.stderr); sys.exit(1)
+
+    # --- Step 3: Fetch Keys ---
     print("\n--- Step 3: Fetching Keys ---")
     all_fetched_keys_raw = []; fetch_errors = 0; total_lines_fetched = 0
     for index, url in enumerate(SOURCE_URLS_LIST):
@@ -395,13 +403,21 @@ def main():
                  try: encoding = response.encoding if response.encoding else response.apparent_encoding; raw_data = response.content.decode(encoding if encoding else 'iso-8859-1', errors='replace'); print(f"  Decoded as {encoding if encoding else 'iso-8859-1'}.")
                  except Exception: raw_data = response.content.decode('iso-8859-1', errors='replace'); print(f"  Warning: Fallback decode iso-8859-1.")
             lines = raw_data.splitlines(); count_for_source = 0
-            for line in lines: line = line.strip(); if line: all_fetched_keys_raw.append(line); count_for_source += 1
+            # Corrected multi-line loop structure for processing lines
+            for line in lines:
+                line = line.strip()
+                if line:
+                    all_fetched_keys_raw.append(line)
+                    count_for_source += 1
             total_lines_fetched += count_for_source; print(f" -> Fetched {count_for_source} non-empty lines.")
         except requests.exceptions.Timeout: print(f"ERROR: Timeout fetching {url[:100]}", file=sys.stderr); fetch_errors += 1
         except requests.exceptions.RequestException as e: print(f"ERROR: Failed fetching {url[:100]}: {e}", file=sys.stderr); fetch_errors += 1
         except Exception as e: print(f"ERROR: Processing {url[:100]}: {e}", file=sys.stderr); fetch_errors += 1; traceback.print_exc(file=sys.stderr)
+
     print(f"\nFinished fetching. Total lines: {total_lines_fetched}. Errors: {fetch_errors}.")
     if not all_fetched_keys_raw: print("Error: No lines fetched. Writing empty output.", file=sys.stderr); try: open(OUTPUT_FILE_PATH, 'w').close(); print(f"Created empty: {OUTPUT_FILE_PATH}") ; except IOError as e_f: print(f"Warning: Cannot create empty file: {e_f}", file=sys.stderr); sys.exit(0 if fetch_errors < len(SOURCE_URLS_LIST) else 1)
+
+    # --- Step 4: Process Keys ---
     print("\n--- Step 4: Processing/Deduplicating Keys ---")
     unique_keys_to_test = set(); processed_count = 0; decode_attempts = 0; base64_decoded_keys = 0; unsupported_skips = 0
     for line in all_fetched_keys_raw:
@@ -413,9 +429,13 @@ def main():
                  decoded = base64.b64decode(line + '=' * (-len(line) % 4)).decode('utf-8', errors='replace')
                  found_keys_in_line = re.findall(r'(vmess|vless|trojan|ss)://[^\s"\'<>\`]+', decoded)
                  if found_keys_in_line:
-                      for key in found_keys_in_line: # Corrected Loop
+                      # Corrected multi-line loop structure for processing keys within base64
+                      for key in found_keys_in_line:
                           key = key.strip()
-                          if key not in unique_keys_to_test: unique_keys_to_test.add(key); processed_count += 1; base64_decoded_keys += 1
+                          if key not in unique_keys_to_test:
+                              unique_keys_to_test.add(key)
+                              processed_count += 1
+                              base64_decoded_keys += 1
              except Exception: unsupported_skips += 1
     unique_keys_list = list(unique_keys_to_test)
     print(f"Processed {len(all_fetched_keys_raw)} lines. Found {len(unique_keys_list)} unique potential keys.")
@@ -452,7 +472,7 @@ def main():
                  current_time = time.time(); elapsed = current_time - start_test_time; rate = tested_count / elapsed if elapsed > 0 else 0
                  progress_message = f"Progress: Tested {tested_count}/{len(unique_keys_list)} | Found: {len(all_working_keys)} | Rate: {rate:.1f} keys/s | Elapsed: {elapsed:.0f}s"
                  if stop_early: progress_message += " (Stopping Early)"
-                 print(progress_message, end='\n' if stop_early or tested_count == len(unique_keys_list) else '\r') # Print newline at end or when stopping
+                 print(progress_message, end='\n' if stop_early or tested_count == len(unique_keys_list) else '\r')
             if stop_early: break
     print(); print(f"Finished testing phase. Tested {tested_count} keys."); test_duration = time.time() - start_test_time; print(f"Total testing time: {test_duration:.2f} seconds.")
 
@@ -480,16 +500,14 @@ if __name__ == "__main__":
     # Add signal handling for graceful termination if needed
     def handle_signal(sig, frame):
         print(f"\nSignal {sig} received. Exiting gracefully...")
+        # Consider adding logic here to stop the thread pool if needed
         sys.exit(1)
     try:
         signal.signal(signal.SIGINT, handle_signal) # Handle Ctrl+C
         signal.signal(signal.SIGTERM, handle_signal) # Handle termination signal
-    except NameError: # signal module might not be available on all OS (e.g., maybe Windows?)
-        print("Warning: Signal handling not available on this platform.")
+    except (AttributeError, ValueError, OSError) as e_signal:
+        # Catch errors if signal module is not available or setting fails
+        print(f"Warning: Could not set signal handlers ({e_signal}).")
         pass
-    except ValueError: # Can happen inside Windows containers sometimes
-        print("Warning: Could not set signal handler.")
-        pass
-
 
     main()
