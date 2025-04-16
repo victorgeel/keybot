@@ -6,7 +6,7 @@
 #              tests their connectivity using the xray-knife ping command,
 #              stops testing early when a target number of working keys are found,
 #              deduplicates and saves the working keys to a file.
-# Version: 2.2 (Using xray-knife, SyntaxError fixed, Improved success pattern parsing)
+# Version: 2.3 (Using xray-knife, Fixed multiple SyntaxErrors, Improved success pattern parsing)
 
 import requests
 import subprocess
@@ -72,7 +72,7 @@ print(f"Supported protocols for testing: {SUPPORTED_PROTOCOLS}")
 
 # User-Agent for fetching subscription URLs
 REQUEST_HEADERS = {
-    'User-Agent': f'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36 KeyTester/2.2'
+    'User-Agent': f'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36 KeyTester/2.3'
 }
 print(f"Subscription Fetch Headers: {REQUEST_HEADERS}")
 print("--- End Configuration ---")
@@ -311,6 +311,7 @@ def test_v2ray_key(key_url):
         if not host:
              final_fail_reason = "Invalid URL (no hostname)"
              return key_url, False
+        # Use 'with' statement for automatic socket closing
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.settimeout(3.0); s.connect((host, port))
     except socket.gaierror:
@@ -338,10 +339,8 @@ def test_v2ray_key(key_url):
         stderr_data = process.stderr.strip() if process.stderr else ""
 
         # --- Determine Success/Failure ---
-        # --- *** CORRECTED SUCCESS PATTERN *** ---
         # Success Criteria: Exit code 0 AND stdout contains "Success," followed by RTT or Delay and ms value.
         success_pattern = r'Success,.*(RTT|Delay):\s*\d+ms'
-        # --- ******************************** ---
 
         if process.returncode == 0 and re.search(success_pattern, stdout_data, re.IGNORECASE):
             is_working = True; final_fail_reason = ""
@@ -378,7 +377,7 @@ def test_v2ray_key(key_url):
 def main():
     """Main function to orchestrate the key fetching, testing, and saving."""
     script_start_time = time.time()
-    print(f"\n=== Starting Key Tester Script (v2.2 - using xray-knife) at {time.strftime('%Y-%m-%d %H:%M:%S %Z')} ===")
+    print(f"\n=== Starting Key Tester Script (v2.3 - using xray-knife) at {time.strftime('%Y-%m-%d %H:%M:%S %Z')} ===")
 
     # --- Step 1: Setup xray-knife ---
     if not download_and_extract_xray_knife(): print("FATAL: Failed to setup xray-knife. Exiting.", file=sys.stderr); sys.exit(1)
@@ -416,11 +415,14 @@ def main():
 
     # --- Check if any keys were fetched ---
     print(f"\nFinished fetching. Total non-empty lines fetched: {total_lines_fetched}. Source URL fetch errors: {fetch_errors}.")
+    # Corrected block for handling no fetched keys
     if not all_fetched_keys_raw:
         print("Error: No key lines were fetched from any source URL. Writing empty output file.", file=sys.stderr)
         try:
-            with open(OUTPUT_FILE_PATH, 'w') as f: pass; print(f"Created empty output file: {OUTPUT_FILE_PATH}")
-        except IOError as e_f: print(f"Warning: Could not create empty output file {OUTPUT_FILE_PATH}: {e_f}", file=sys.stderr)
+            with open(OUTPUT_FILE_PATH, 'w') as f: pass
+            print(f"Created empty output file: {OUTPUT_FILE_PATH}")
+        except IOError as e_f:
+            print(f"Warning: Could not create empty output file {OUTPUT_FILE_PATH}: {e_f}", file=sys.stderr)
         print(f"Exiting script. Fetch errors: {fetch_errors}, Total sources: {len(SOURCE_URLS_LIST)}")
         sys.exit(0 if fetch_errors < len(SOURCE_URLS_LIST) else 1)
 
@@ -448,11 +450,28 @@ def main():
 
     # --- Step 5: Test Unique Keys Concurrently ---
     print("\n--- Step 5: Testing Unique Keys Concurrently ---")
+    # Corrected block for handling no unique keys found *after* processing
     if not unique_keys_list:
-        print("No unique valid keys found to test after processing. Writing empty file."); try: with open(OUTPUT_FILE_PATH, 'w') as f: pass; print(f"Created empty output file: {OUTPUT_FILE_PATH}"); except IOError as e_f: print(f"Warning: Could not create empty output file {OUTPUT_FILE_PATH}: {e_f}", file=sys.stderr); sys.exit(0)
-    print(f"Starting tests for {len(unique_keys_list)} unique keys..."); print(f"(Target working keys for early exit: {TARGET_EARLY_EXIT_KEYS})"); print(f"(Max Workers: {MAX_WORKERS}, Ping Timeout: {TEST_PING_TIMEOUT}s per key)")
+        print("No unique valid keys found to test after processing. Writing empty file.")
+        try:
+            # Attempt to create an empty file as output since there's nothing to test
+            with open(OUTPUT_FILE_PATH, 'w') as f:
+                 pass # Creates or truncates the file
+            print(f"Created empty output file: {OUTPUT_FILE_PATH}")
+        except IOError as e_f:
+            # Error creating the empty file
+            print(f"Warning: Could not create empty output file {OUTPUT_FILE_PATH}: {e_f}", file=sys.stderr)
+        # Exit gracefully with code 0, as this is not an error state, just nothing to do.
+        sys.exit(0)
+
+    # Continue with testing if unique_keys_list is not empty
+    print(f"Starting tests for {len(unique_keys_list)} unique keys...")
+    print(f"(Target working keys for early exit: {TARGET_EARLY_EXIT_KEYS})")
+    print(f"(Max Workers: {MAX_WORKERS}, Ping Timeout: {TEST_PING_TIMEOUT}s per key)")
+
     all_working_keys = []; tested_count = 0; start_test_time = time.time(); futures_cancelled = 0; stop_early = False
-    random.shuffle(unique_keys_list)
+    random.shuffle(unique_keys_list) # Shuffle keys to test in random order
+
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
         future_to_key = {executor.submit(test_v2ray_key, key): key for key in unique_keys_list}; active_futures = list(future_to_key.keys())
         for future in as_completed(active_futures):
@@ -507,4 +526,3 @@ if __name__ == "__main__":
     try: signal.signal(signal.SIGINT, handle_signal); signal.signal(signal.SIGTERM, handle_signal)
     except (AttributeError, ValueError, OSError) as e_signal: print(f"Warning: Could not set signal handlers ({e_signal}). Graceful shutdown via signal might not work.")
     main()
-
