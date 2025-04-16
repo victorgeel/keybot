@@ -6,7 +6,7 @@
 #              tests their connectivity using the xray-knife 'check' command,
 #              stops testing early when a target number of working keys are found,
 #              deduplicates and saves the working keys to a file.
-# Version: 2.7 (Using xray-knife check, fixed IndentationError and previous errors)
+# Version: 2.8 (Fixed missing except block after try in Base64 decoding)
 
 import requests
 import subprocess
@@ -72,7 +72,7 @@ print(f"Supported protocols for testing: {SUPPORTED_PROTOCOLS}")
 
 # User-Agent for fetching subscription URLs
 REQUEST_HEADERS = {
-    'User-Agent': f'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36 KeyTester/2.7' # Version bump
+    'User-Agent': f'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36 KeyTester/2.8' # Version bump
 }
 print(f"Subscription Fetch Headers: {REQUEST_HEADERS}")
 print("--- End Configuration ---")
@@ -207,10 +207,8 @@ def test_v2ray_key(key_url):
                     else: final_fail_reason += f" ({stderr_data.splitlines()[0]})"[:150]
             elif "timeout" in stdout_data.lower() or "timeout" in stderr_data.lower():
                  final_fail_reason = f"Check Timeout detected in output"
-            elif stderr_data:
-                 final_fail_reason = f"Error in Stderr (Exit 0): {stderr_data.splitlines()[0]}"[:150]
-            elif stdout_data:
-                 final_fail_reason = f"Output OK but No Success Pattern: {stdout_data.splitlines()[0]}"[:150]
+            elif stderr_data: final_fail_reason = f"Error in Stderr (Exit 0): {stderr_data.splitlines()[0]}"[:150]
+            elif stdout_data: final_fail_reason = f"Output OK but No Success Pattern: {stdout_data.splitlines()[0]}"[:150]
             else: final_fail_reason = f"Exit Code {process.returncode} and No Output"
 
         return key_url, is_working
@@ -228,7 +226,7 @@ def test_v2ray_key(key_url):
 def main():
     """Main function to orchestrate the key fetching, testing, and saving."""
     script_start_time = time.time()
-    print(f"\n=== Starting Key Tester Script (v2.7 - using xray-knife check) at {time.strftime('%Y-%m-%d %H:%M:%S %Z')} ===") # Version bump
+    print(f"\n=== Starting Key Tester Script (v2.8 - fixed missing except) at {time.strftime('%Y-%m-%d %H:%M:%S %Z')} ===") # Version bump
 
     # Step 1: Setup xray-knife
     if not download_and_extract_xray_knife(): print("FATAL: Failed to setup xray-knife.", file=sys.stderr); sys.exit(1)
@@ -252,17 +250,14 @@ def main():
             except UnicodeDecodeError:
                  try: encoding = response.encoding if response.encoding else response.apparent_encoding; encoding = encoding if encoding else 'iso-8859-1'; raw_data = response.content.decode(encoding, errors='replace'); print(f"  Decoded as {encoding}.")
                  except Exception as decode_err: raw_data = response.content.decode('iso-8859-1', errors='replace'); print(f"  ERROR: Decode failed: {decode_err}.", file=sys.stderr); fetch_errors += 1
-
-            # *** CORRECTED INDENTATION IN THIS BLOCK ***
+            # Corrected indentation for loop processing lines
             lines = raw_data.splitlines()
             count_for_source = 0
             for line in lines:
-                line = line.strip() # Process each line inside the loop
-                if line:             # Check if line is not empty after stripping
+                line = line.strip()
+                if line:
                     all_fetched_keys_raw.append(line)
                     count_for_source += 1
-            # *** END CORRECTED INDENTATION ***
-
             total_lines_fetched += count_for_source
             print(f" -> Fetched {count_for_source} non-empty lines from this source.")
         except requests.exceptions.Timeout: print(f"ERROR: Timeout fetching {url[:100]}", file=sys.stderr); fetch_errors += 1
@@ -271,16 +266,12 @@ def main():
 
     # Check if any keys fetched
     print(f"\nFinished fetching. Lines: {total_lines_fetched}. Errors: {fetch_errors}.")
-    # Corrected block for handling no fetched keys
     if not all_fetched_keys_raw:
         print("Error: No key lines were fetched from any source URL. Writing empty output file.", file=sys.stderr)
         try:
-            with open(OUTPUT_FILE_PATH, 'w') as f: pass
-            print(f"Created empty output file: {OUTPUT_FILE_PATH}")
-        except IOError as e_f:
-            print(f"Warning: Could not create empty output file {OUTPUT_FILE_PATH}: {e_f}", file=sys.stderr)
-        print(f"Exiting script. Fetch errors: {fetch_errors}, Total sources: {len(SOURCE_URLS_LIST)}")
-        sys.exit(0 if fetch_errors < len(SOURCE_URLS_LIST) else 1)
+            with open(OUTPUT_FILE_PATH, 'w') as f: pass; print(f"Created empty output file: {OUTPUT_FILE_PATH}")
+        except IOError as e_f: print(f"Warning: Could not create empty output file {OUTPUT_FILE_PATH}: {e_f}", file=sys.stderr)
+        print(f"Exiting script. Fetch errors: {fetch_errors}, Total sources: {len(SOURCE_URLS_LIST)}"); sys.exit(0 if fetch_errors < len(SOURCE_URLS_LIST) else 1)
 
     # Step 4: Process Keys
     print("\n--- Step 4: Processing & Deduplicating ---")
@@ -290,32 +281,30 @@ def main():
         if any(line.startswith(proto) for proto in SUPPORTED_PROTOCOLS): unique_keys_to_test.add(line)
         else:
             decode_attempts += 1
-            try: line_padded = line + '=' * (-len(line) % 4); decoded_content = base64.b64decode(line_padded).decode('utf-8', errors='replace'); found_keys = re.findall(r'(vmess|vless|trojan|ss)://[^\s"\'<>\`\\]+', decoded_content)
+            try: # Start try block for Base64 decode
+                line_padded = line + '=' * (-len(line) % 4); decoded_content = base64.b64decode(line_padded).decode('utf-8', errors='replace'); found_keys = re.findall(r'(vmess|vless|trojan|ss)://[^\s"\'<>\`\\]+', decoded_content)
                 if found_keys:
                     for key in found_keys: key = key.strip();
                         if any(key.startswith(proto) for proto in SUPPORTED_PROTOCOLS): unique_keys_to_test.add(key); keys_found_in_base64 += 1
-            except (base64.binascii.Error, UnicodeDecodeError): skipped_invalid_lines += 1
-            except Exception as e_dec: print(f"Warning: Error processing Base64: {e_dec}", file=sys.stderr); skipped_invalid_lines += 1
+            # *** Corrected: Added missing except blocks back ***
+            except (base64.binascii.Error, UnicodeDecodeError):
+                skipped_invalid_lines += 1 # Handle invalid base64/decode
+            except Exception as e_dec:
+                print(f"Warning: Error processing Base64: {e_dec}", file=sys.stderr); skipped_invalid_lines += 1
+            # *** End corrected block ***
     unique_keys_list = list(unique_keys_to_test)
     print(f"Processed lines: {processed_line_count}. Unique keys found: {len(unique_keys_list)}."); print(f"(Base64 attempts: {decode_attempts}, Found in Base64: {keys_found_in_base64}, Skipped lines: {skipped_invalid_lines})")
 
     # Step 5: Test Keys
     print("\n--- Step 5: Testing Keys Concurrently ---")
-    # Corrected block for handling no unique keys found *after* processing
     if not unique_keys_list:
         print("No unique valid keys found to test after processing. Writing empty file.")
-        try:
-            with open(OUTPUT_FILE_PATH, 'w') as f: pass
-            print(f"Created empty output file: {OUTPUT_FILE_PATH}")
-        except IOError as e_f:
-            print(f"Warning: Could not create empty output file {OUTPUT_FILE_PATH}: {e_f}", file=sys.stderr)
+        try: with open(OUTPUT_FILE_PATH, 'w') as f: pass; print(f"Created empty output file: {OUTPUT_FILE_PATH}")
+        except IOError as e_f: print(f"Warning: Could not create empty output file {OUTPUT_FILE_PATH}: {e_f}", file=sys.stderr)
         sys.exit(0)
-
-    # Continue with testing if unique_keys_list is not empty
     print(f"Testing {len(unique_keys_list)} keys (Target: {TARGET_EARLY_EXIT_KEYS})..."); print(f"(Workers: {MAX_WORKERS}, Timeout: {TEST_TIMEOUT}s/key)")
     all_working_keys = []; tested_count = 0; start_test_time = time.time(); futures_cancelled = 0; stop_early = False
     random.shuffle(unique_keys_list)
-
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
         future_to_key = {executor.submit(test_v2ray_key, key): key for key in unique_keys_list}; active_futures = list(future_to_key.keys())
         for future in as_completed(active_futures):
@@ -362,7 +351,7 @@ def main():
     print(f"Working keys COLLECTED: {num_working}"); print(f"Working keys WRITTEN: {num_to_write}"); print(f"Output file: {os.path.abspath(OUTPUT_FILE_PATH)}")
     print(f"Script finished in {total_time:.2f} seconds."); print("======================================================")
 
-# --- Script Entry Point ---
+# --- Entry Point ---
 if __name__ == "__main__":
     # Define signal handler function
     def handle_signal(sig, frame):
@@ -375,7 +364,7 @@ if __name__ == "__main__":
         signal.signal(signal.SIGINT, handle_signal)
         signal.signal(signal.SIGTERM, handle_signal)
         print("Signal handlers set up.")
-    except (AttributeError, ValueError, OSError) as e_signal:
+    except Exception as e_signal:
         print(f"Warning: Could not set signal handlers ({e_signal}). Graceful shutdown via signal might not work.")
         pass # Continue execution even if signal handlers fail to set
 
