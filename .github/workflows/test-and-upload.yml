@@ -1,21 +1,19 @@
 name: V2Ray Key Tester CI
 
-on: schedule: - cron: '*/30 * * * *' # Every 30 minutes workflow_dispatch:
+on: schedule: - cron: '*/30 * * * *'  # Every 30 minutes
 
-jobs: run-key-tester: runs-on: ubuntu-latest timeout-minutes: 15
+jobs: run-key-tester: runs-on: ubuntu-latest timeout-minutes: 10
 
 steps:
   - name: Checkout Repository
     uses: actions/checkout@v4
     with:
       token: ${{ secrets.PUSH_TOKEN }}
-      persist-credentials: false
 
   - name: Set up Python
     uses: actions/setup-python@v5
     with:
       python-version: '3.10'
-      cache: 'pip'
 
   - name: Install Python Dependencies
     run: |
@@ -29,56 +27,15 @@ steps:
     run: python test_and_upload.py
 
   - name: Commit and Push Result
+    env:
+      PUSH_TOKEN: ${{ secrets.PUSH_TOKEN }}
     run: |
       FILE="subscription/working_keys.txt"
-      if [ ! -f "$FILE" ]; then
-        echo "No output found. Skipping commit."
-        exit 0
-      fi
-
-      git config --global user.name "github-actions[bot]"
-      git config --global user.email "github-actions[bot]@users.noreply.github.com"
-      git add $FILE
-
-      if git diff --staged --quiet; then
-        echo "No changes to commit."
-      else
-        git commit -m "Update working keys [skip ci]"
-        git remote set-url origin https://x-access-token:${{ secrets.PUSH_TOKEN }}@github.com/${{ github.repository }}
-        git push --force origin HEAD:${{ github.ref_name }}
-
-  - name: Install rclone
-    run: |
-      sudo apt-get update -qq
-      sudo apt-get install -y rclone
-
-  - name: Configure rclone for Cloudflare R2
-    env:
-      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-      R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
-    run: |
-      rclone config create R2 s3 \
-        provider=Cloudflare \
-        access_key_id=$R2_ACCESS_KEY_ID \
-        secret_access_key=$R2_SECRET_ACCESS_KEY \
-        endpoint=$R2_ENDPOINT \
-        acl=public-read
-
-  - name: Upload File to R2
-    env:
-      R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
-    run: |
-      FILE="subscription/working_keys.txt"
-      TARGET="R2:${R2_BUCKET_NAME}/working_keys.txt"
       if [ -f "$FILE" ]; then
-        rclone copyto --checksum --verbose --retries 3 "$FILE" "$TARGET"
-      else
-        echo "Output file not found. Skipping R2 upload."
-
-  - name: Clean Workspace
-    if: always()
-    run: |
-      rm -rf ./subscription/
-      rm -f ./xray
+        git config --global user.name 'KeyBot'
+        git config --global user.email 'keybot@users.noreply.github.com'
+        git add "$FILE"
+        git commit -m "Update working keys [CI Auto]"
+        git push
+      fi
 
