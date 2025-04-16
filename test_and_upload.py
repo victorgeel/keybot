@@ -1,7 +1,7 @@
 # FILE: test_and_upload.py
 # Description: Fetches V2Ray keys, tests them using Xray (Proxy Method),
 #              stops testing early when 700 working keys are found,
-#              and saves working keys. (Syntax Fix Applied)
+#              and saves working keys. (Full Syntax Analysis Performed)
 
 import requests
 import subprocess
@@ -70,7 +70,7 @@ REQUEST_HEADERS = {
 print(f"Request Headers: {REQUEST_HEADERS}")
 print("--- End Configuration ---")
 
-# --- Xray Installation (Function remains the same) ---
+# --- Xray Installation ---
 def download_and_extract_xray():
     """Downloads and extracts the latest Xray core binary using GitHub token."""
     print("Checking/Downloading Xray...")
@@ -157,7 +157,6 @@ def generate_config(key_url):
         parsed_url = urlparse(key_url); protocol = parsed_url.scheme
         base_config = {"log": {"loglevel": "warning"},"inbounds": [{"port": PROXY_PORT,"protocol": "socks","settings": {"auth": "noauth", "udp": True, "ip": "127.0.0.1"},"listen": "127.0.0.1"}],"outbounds": [{"protocol": protocol, "settings": {}, "streamSettings": {}}]}
         outbound = base_config["outbounds"][0]; stream_settings = outbound["streamSettings"]; config = None
-
         # --- VMess ---
         if protocol == "vmess":
             try:
@@ -173,8 +172,7 @@ def generate_config(key_url):
                 elif net_type == "grpc": service_name = vmess_params.get("path", ""); mode = vmess_params.get("mode", "gun"); stream_settings["grpcSettings"] = {"serviceName": service_name, "multiMode": mode == "multi"}
                 config = base_config
             except Exception: return None
-
-        # --- VLESS --- (Syntax Error Fix Applied)
+        # --- VLESS ---
         elif protocol == "vless":
             try:
                 if not parsed_url.username or not parsed_url.hostname: return None
@@ -182,13 +180,14 @@ def generate_config(key_url):
                 outbound["settings"]["vnext"] = [{"address": address,"port": port,"users": [{"id": uuid, "flow": flow, "encryption": encryption}]}]
                 net_type = params.get('type', ['tcp'])[0]; sec_type = params.get('security', ['none'])[0]; sni = params.get('sni', params.get('peer', [address]))[0]; fingerprint = params.get('fp', [''])[0]; allow_insecure = params.get('allowInsecure', ['0'])[0] == '1'
                 stream_settings["network"] = net_type; stream_settings["security"] = sec_type
+                # Corrected TLS block (multi-line)
                 if sec_type == "tls":
                     alpn = params.get('alpn', [None])[0]
                     tls_settings = {"serverName": sni, "allowInsecure": allow_insecure}
                     stream_settings.pop("realitySettings", None)
                     if fingerprint: tls_settings["fingerprint"] = fingerprint
                     if alpn: tls_settings["alpn"] = [p.strip() for p in alpn.split(',') if p.strip()]
-                    stream_settings["tlsSettings"] = tls_settings # Corrected: Assign dict
+                    stream_settings["tlsSettings"] = tls_settings
                 elif sec_type == "reality":
                     pbk = params.get('pbk', [''])[0]; sid = params.get('sid', [''])[0]; spx = unquote_plus(params.get('spx', ['/'])[0])
                     stream_settings.pop("tlsSettings", None)
@@ -203,22 +202,17 @@ def generate_config(key_url):
                 elif net_type == "tcp" and params.get('headerType', ['none'])[0] == 'http': host_list = [h.strip() for h in host.split(',') if h.strip()] or [address]; path_list = [path]; stream_settings["tcpSettings"] = {"header": {"type": "http", "request": {"path": path_list, "headers": {"Host": host_list}}}}
                 config = base_config
             except Exception: return None
-
-        # --- Trojan --- (Syntax Error Fix Applied)
+        # --- Trojan ---
         elif protocol == "trojan":
             try:
                 if not parsed_url.username or not parsed_url.hostname: return None
                 password = unquote_plus(parsed_url.username); address = parsed_url.hostname; port = int(parsed_url.port or 443); params = parse_qs(parsed_url.query)
                 outbound["settings"]["servers"] = [{"address": address, "port": port, "password": password}]
-
-                # <--- Fix SyntaxError Area Start ---
+                # Corrected multi-line structure
                 net_type = params.get('type', ['tcp'])[0]
-                # Default security to 'tls' for Trojan if not specified or 'none'
                 sec_type = params.get('security', ['tls'])[0]
-                if sec_type == 'none': # Trojan အတွက် security 'none' ဖြစ်နေရင် 'tls' လို့ပဲ သတ်မှတ်လိုက်ပါ
+                if sec_type == 'none':
                     sec_type = 'tls'
-                # <--- Fix SyntaxError Area End ---
-
                 sni = params.get('sni', params.get('peer', [address]))[0]; fingerprint = params.get('fp', [''])[0]; allow_insecure = params.get('allowInsecure', ['0'])[0] == '1'; alpn = params.get('alpn', [None])[0]
                 stream_settings["network"] = net_type; stream_settings["security"] = sec_type
                 if sec_type == "tls":
@@ -232,14 +226,12 @@ def generate_config(key_url):
                     if fingerprint: tls_settings["fingerprint"] = fingerprint
                     if alpn: tls_settings["alpn"] = [p.strip() for p in alpn.split(',') if p.strip()]
                     stream_settings["tlsSettings"] = tls_settings
-
                 host = params.get('host', [address])[0]; path = unquote_plus(params.get('path', ['/'])[0]); service_name = unquote_plus(params.get('serviceName', [''])[0]); mode = params.get('mode', ['gun'])[0]
                 if net_type == "ws": stream_settings["wsSettings"] = {"path": path, "headers": {"Host": host}}
                 elif net_type == "grpc": stream_settings["grpcSettings"] = {"serviceName": service_name, "multiMode": mode=="multi"}
                 elif net_type == "tcp" and params.get('headerType', ['none'])[0] == 'http': host_list = [h.strip() for h in host.split(',') if h.strip()] or [address]; path_list = [path]; stream_settings["tcpSettings"] = {"header": {"type": "http","request": { "path": path_list, "headers": { "Host": host_list } }}}
                 config = base_config
             except Exception: return None
-
         # --- Shadowsocks (SS) ---
         elif protocol == "ss":
             try:
@@ -280,7 +272,7 @@ def generate_config(key_url):
     except Exception as e: print(f"DEBUG: Outer error in generate_config: {e}"); traceback.print_exc(file=sys.stderr); return None
 
 
-# --- Key Testing (Proxy Method - Function remains the same) ---
+# --- Key Testing (Proxy Method) ---
 def test_v2ray_key(key_url):
     """Tests a single key using Xray in proxy mode and returns (key_url, is_working)."""
     config_json = generate_config(key_url)
@@ -350,16 +342,25 @@ def main():
         try:
             response = requests.get(url, timeout=REQUEST_TIMEOUT, headers=REQUEST_HEADERS, allow_redirects=True)
             response.raise_for_status(); raw_data = None
-            try: raw_data = response.content.decode('utf-8'); print(f"  Decoded as UTF-8.")
+            try: raw_data = response.content.decode('utf-8');
             except UnicodeDecodeError:
                  try: encoding = response.encoding if response.encoding else response.apparent_encoding; raw_data = response.content.decode(encoding if encoding else 'iso-8859-1', errors='replace'); print(f"  Decoded as {encoding if encoding else 'iso-8859-1'}.")
                  except Exception: raw_data = response.content.decode('iso-8859-1', errors='replace'); print(f"  Warning: Fallback decode iso-8859-1.")
-            lines = raw_data.splitlines(); count_for_source = 0
-            for line in lines: line = line.strip(); if line: all_fetched_keys_raw.append(line); count_for_source += 1
-            total_lines_fetched += count_for_source; print(f" -> Fetched {count_for_source} non-empty lines.")
+
+            lines = raw_data.splitlines()
+            count_for_source = 0
+            # Corrected multi-line loop structure
+            for line in lines:
+                line = line.strip()
+                if line:
+                    all_fetched_keys_raw.append(line)
+                    count_for_source += 1
+            total_lines_fetched += count_for_source
+            print(f" -> Fetched {count_for_source} non-empty lines.")
         except requests.exceptions.Timeout: print(f"ERROR: Timeout fetching {url[:100]}", file=sys.stderr); fetch_errors += 1
         except requests.exceptions.RequestException as e: print(f"ERROR: Failed fetching {url[:100]}: {e}", file=sys.stderr); fetch_errors += 1
         except Exception as e: print(f"ERROR: Processing {url[:100]}: {e}", file=sys.stderr); fetch_errors += 1; traceback.print_exc(file=sys.stderr)
+
     print(f"\nFinished fetching. Total lines: {total_lines_fetched}. Errors: {fetch_errors}.")
     if not all_fetched_keys_raw:
          print("Error: No lines fetched. Writing empty output.", file=sys.stderr)
@@ -484,4 +485,3 @@ def main():
 # --- Entry Point ---
 if __name__ == "__main__":
     main()
-
