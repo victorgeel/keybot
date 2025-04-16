@@ -6,7 +6,7 @@
 #              tests their connectivity using the xray-knife 'check' command,
 #              stops testing early when a target number of working keys are found,
 #              deduplicates and saves the working keys to a file.
-# Version: 2.6 (Using xray-knife check command, fixed previous errors)
+# Version: 2.7 (Using xray-knife check, fixed IndentationError and previous errors)
 
 import requests
 import subprocess
@@ -72,7 +72,7 @@ print(f"Supported protocols for testing: {SUPPORTED_PROTOCOLS}")
 
 # User-Agent for fetching subscription URLs
 REQUEST_HEADERS = {
-    'User-Agent': f'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36 KeyTester/2.6' # Version bump
+    'User-Agent': f'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36 KeyTester/2.7' # Version bump
 }
 print(f"Subscription Fetch Headers: {REQUEST_HEADERS}")
 print("--- End Configuration ---")
@@ -183,47 +183,35 @@ def test_v2ray_key(key_url):
     except (socket.timeout, ConnectionRefusedError, OSError) as e_sock: final_fail_reason = f"Pre-check connect failed ({type(e_sock).__name__})"; pass
     except Exception as e_pre_other: print(f"Warning: Pre-check error {key_url[:30]}: {e_pre_other}", file=sys.stderr); pass
 
-    # --- *** USE 'check' COMMAND INSTEAD OF 'ping' *** ---
+    # Main Test using xray-knife check
     abs_xray_knife_path = os.path.abspath(XRAY_KNIFE_PATH)
-    cmd = [
-        abs_xray_knife_path,
-        "check", # Use the 'check' command
-        "link",
-        key_url,
-        "--timeout", str(TEST_TIMEOUT) + "s",
-        # Consider adding '-m http' or '-m tcp' if default check isn't sufficient
-    ]
-    # --- ***************************************** ---
+    cmd = [ abs_xray_knife_path, "check", "link", key_url, "--timeout", str(TEST_TIMEOUT) + "s" ]
 
     try:
         process = subprocess.run( cmd, capture_output=True, text=True, timeout=SUBPROCESS_TIMEOUT, check=False, encoding='utf-8', errors='replace')
         stdout_data = process.stdout.strip() if process.stdout else ""
         stderr_data = process.stderr.strip() if process.stderr else ""
 
-        # Determine Success/Failure using the same pattern (likely valid for 'check')
+        # Determine Success/Failure
         success_pattern = r'Success,.*(RTT|Delay):\s*\d+ms'
 
         if process.returncode == 0 and re.search(success_pattern, stdout_data, re.IGNORECASE):
             is_working = True; final_fail_reason = ""
         else:
             is_working = False
-            # Refined failure reason determination
             if process.returncode != 0:
                 final_fail_reason = f"xray-knife exited with code {process.returncode}"
-                # Check stderr for specific error messages from xray-knife
                 if stderr_data:
-                    # Extract the core error message if possible
                     error_match = re.search(r'Error:\s*(.*)', stderr_data, re.IGNORECASE)
                     if error_match: final_fail_reason += f" ({error_match.group(1).strip()})"[:150]
-                    else: final_fail_reason += f" ({stderr_data.splitlines()[0]})"[:150] # Fallback to first line
+                    else: final_fail_reason += f" ({stderr_data.splitlines()[0]})"[:150]
             elif "timeout" in stdout_data.lower() or "timeout" in stderr_data.lower():
                  final_fail_reason = f"Check Timeout detected in output"
-            elif stderr_data: # Exit code 0 but stderr has content
+            elif stderr_data:
                  final_fail_reason = f"Error in Stderr (Exit 0): {stderr_data.splitlines()[0]}"[:150]
-            elif stdout_data: # Exit code 0, no stderr, but stdout doesn't match success
+            elif stdout_data:
                  final_fail_reason = f"Output OK but No Success Pattern: {stdout_data.splitlines()[0]}"[:150]
-            else: # Exit code 0, no output
-                final_fail_reason = f"Exit Code {process.returncode} and No Output"
+            else: final_fail_reason = f"Exit Code {process.returncode} and No Output"
 
         return key_url, is_working
 
@@ -233,15 +221,14 @@ def test_v2ray_key(key_url):
     finally:
         if not is_working:
              log_message = f"DEBUG: Test FAIL Key: {key_url[:60]}... Reason: {final_fail_reason}"
-             # Avoid printing redundant stderr if already included in reason
              if stderr_data and "Stderr" not in final_fail_reason and "exited with code" not in final_fail_reason: log_message += f" | Stderr: {stderr_data.splitlines()[0]}"[:150]
              print(log_message, file=sys.stderr)
 
-
 # --- Main Execution Logic ---
 def main():
+    """Main function to orchestrate the key fetching, testing, and saving."""
     script_start_time = time.time()
-    print(f"\n=== Starting Key Tester Script (v2.6 - using xray-knife check) at {time.strftime('%Y-%m-%d %H:%M:%S %Z')} ===") # Version bump
+    print(f"\n=== Starting Key Tester Script (v2.7 - using xray-knife check) at {time.strftime('%Y-%m-%d %H:%M:%S %Z')} ===") # Version bump
 
     # Step 1: Setup xray-knife
     if not download_and_extract_xray_knife(): print("FATAL: Failed to setup xray-knife.", file=sys.stderr); sys.exit(1)
@@ -265,18 +252,35 @@ def main():
             except UnicodeDecodeError:
                  try: encoding = response.encoding if response.encoding else response.apparent_encoding; encoding = encoding if encoding else 'iso-8859-1'; raw_data = response.content.decode(encoding, errors='replace'); print(f"  Decoded as {encoding}.")
                  except Exception as decode_err: raw_data = response.content.decode('iso-8859-1', errors='replace'); print(f"  ERROR: Decode failed: {decode_err}.", file=sys.stderr); fetch_errors += 1
-            lines = raw_data.splitlines(); count_for_source = 0
-            for line in lines: line = line.strip();
-                if line: all_fetched_keys_raw.append(line); count_for_source += 1
-            total_lines_fetched += count_for_source; print(f" -> Fetched {count_for_source} lines.")
+
+            # *** CORRECTED INDENTATION IN THIS BLOCK ***
+            lines = raw_data.splitlines()
+            count_for_source = 0
+            for line in lines:
+                line = line.strip() # Process each line inside the loop
+                if line:             # Check if line is not empty after stripping
+                    all_fetched_keys_raw.append(line)
+                    count_for_source += 1
+            # *** END CORRECTED INDENTATION ***
+
+            total_lines_fetched += count_for_source
+            print(f" -> Fetched {count_for_source} non-empty lines from this source.")
         except requests.exceptions.Timeout: print(f"ERROR: Timeout fetching {url[:100]}", file=sys.stderr); fetch_errors += 1
         except requests.exceptions.RequestException as e: print(f"ERROR: Failed fetching {url[:100]}: {e}", file=sys.stderr); fetch_errors += 1
         except Exception as e: print(f"ERROR: Processing {url[:100]}: {e}", file=sys.stderr); fetch_errors += 1; traceback.print_exc(file=sys.stderr)
 
     # Check if any keys fetched
     print(f"\nFinished fetching. Lines: {total_lines_fetched}. Errors: {fetch_errors}.")
+    # Corrected block for handling no fetched keys
     if not all_fetched_keys_raw:
-        print("Error: No keys fetched. Writing empty file.", file=sys.stderr); try: with open(OUTPUT_FILE_PATH, 'w') as f: pass; print(f"Created empty: {OUTPUT_FILE_PATH}"); except IOError as e_f: print(f"Warning: Cannot create empty file {OUTPUT_FILE_PATH}: {e_f}", file=sys.stderr); print(f"Exiting. Fetch errors: {fetch_errors}, Sources: {len(SOURCE_URLS_LIST)}"); sys.exit(0 if fetch_errors < len(SOURCE_URLS_LIST) else 1)
+        print("Error: No key lines were fetched from any source URL. Writing empty output file.", file=sys.stderr)
+        try:
+            with open(OUTPUT_FILE_PATH, 'w') as f: pass
+            print(f"Created empty output file: {OUTPUT_FILE_PATH}")
+        except IOError as e_f:
+            print(f"Warning: Could not create empty output file {OUTPUT_FILE_PATH}: {e_f}", file=sys.stderr)
+        print(f"Exiting script. Fetch errors: {fetch_errors}, Total sources: {len(SOURCE_URLS_LIST)}")
+        sys.exit(0 if fetch_errors < len(SOURCE_URLS_LIST) else 1)
 
     # Step 4: Process Keys
     print("\n--- Step 4: Processing & Deduplicating ---")
@@ -297,11 +301,21 @@ def main():
 
     # Step 5: Test Keys
     print("\n--- Step 5: Testing Keys Concurrently ---")
+    # Corrected block for handling no unique keys found *after* processing
     if not unique_keys_list:
-        print("No keys to test after processing. Writing empty file."); try: with open(OUTPUT_FILE_PATH, 'w') as f: pass; print(f"Created empty: {OUTPUT_FILE_PATH}"); except IOError as e_f: print(f"Warning: Cannot create empty file {OUTPUT_FILE_PATH}: {e_f}", file=sys.stderr); sys.exit(0)
+        print("No unique valid keys found to test after processing. Writing empty file.")
+        try:
+            with open(OUTPUT_FILE_PATH, 'w') as f: pass
+            print(f"Created empty output file: {OUTPUT_FILE_PATH}")
+        except IOError as e_f:
+            print(f"Warning: Could not create empty output file {OUTPUT_FILE_PATH}: {e_f}", file=sys.stderr)
+        sys.exit(0)
+
+    # Continue with testing if unique_keys_list is not empty
     print(f"Testing {len(unique_keys_list)} keys (Target: {TARGET_EARLY_EXIT_KEYS})..."); print(f"(Workers: {MAX_WORKERS}, Timeout: {TEST_TIMEOUT}s/key)")
     all_working_keys = []; tested_count = 0; start_test_time = time.time(); futures_cancelled = 0; stop_early = False
     random.shuffle(unique_keys_list)
+
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
         future_to_key = {executor.submit(test_v2ray_key, key): key for key in unique_keys_list}; active_futures = list(future_to_key.keys())
         for future in as_completed(active_futures):
@@ -348,10 +362,22 @@ def main():
     print(f"Working keys COLLECTED: {num_working}"); print(f"Working keys WRITTEN: {num_to_write}"); print(f"Output file: {os.path.abspath(OUTPUT_FILE_PATH)}")
     print(f"Script finished in {total_time:.2f} seconds."); print("======================================================")
 
-# --- Entry Point ---
+# --- Script Entry Point ---
 if __name__ == "__main__":
-    def handle_signal(sig, frame): print(f"\nSignal {sig} received. Exiting..."); sys.exit(1)
-    try: signal.signal(signal.SIGINT, handle_signal); signal.signal(signal.SIGTERM, handle_signal); print("Signal handlers set.")
-    except Exception as e_signal: print(f"Warning: Could not set signal handlers ({e_signal}).")
-    main()
+    # Define signal handler function
+    def handle_signal(sig, frame):
+        """Signal handler for SIGINT and SIGTERM."""
+        print(f"\nSignal {sig} received. Initiating graceful shutdown...")
+        sys.exit(1) # Exit with a non-zero code indicating interruption
 
+    # Set up signal handlers
+    try:
+        signal.signal(signal.SIGINT, handle_signal)
+        signal.signal(signal.SIGTERM, handle_signal)
+        print("Signal handlers set up.")
+    except (AttributeError, ValueError, OSError) as e_signal:
+        print(f"Warning: Could not set signal handlers ({e_signal}). Graceful shutdown via signal might not work.")
+        pass # Continue execution even if signal handlers fail to set
+
+    # Run the main function
+    main()
