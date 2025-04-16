@@ -151,7 +151,7 @@ jobs:
 
           if [ -f "${LOCAL_FILE}" ]; then
             echo "Output file '${LOCAL_FILE}' found. Attempting upload to R2: ${R2_TARGET_PATH}"
-            # Removed --verbose. Keep --progress.
+            # Removed --verbose. Error messages will still be shown by rclone on failure.
             rclone copyto --checksum --progress --retries 3 --retries-sleep 5s "${LOCAL_FILE}" "${R2_TARGET_PATH}"
             echo "R2 Upload command finished. Check logs above for success/errors."
           else
