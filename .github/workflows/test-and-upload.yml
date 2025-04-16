@@ -1,6 +1,6 @@
 name: V2Ray Key Tester CI
 
-on: schedule: - cron: '*/30 * * * *' # Run every 30 minutes workflow_dispatch:
+on: schedule: - cron: '*/30 * * * *' # Every 30 minutes workflow_dispatch:
 
 jobs: run-key-tester: runs-on: ubuntu-latest timeout-minutes: 15
 
@@ -76,7 +76,6 @@ steps:
       else
         echo "Output file not found. Skipping R2 upload."
 
-  # Optional: Clean up
   - name: Clean Workspace
     if: always()
     run: |
