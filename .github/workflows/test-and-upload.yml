@@ -1,41 +1,53 @@
 name: V2Ray Key Tester CI
 
-on: schedule: - cron: '*/30 * * * *'  # Every 30 minutes
+on:
+  schedule:
+    - cron: '*/30 * * * *'  # Every 30 minutes
+  workflow_dispatch: # Allow manual trigger
 
-jobs: run-key-tester: runs-on: ubuntu-latest timeout-minutes: 10
+jobs:
+  run-key-tester:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
 
-steps:
-  - name: Checkout Repository
-    uses: actions/checkout@v4
-    with:
-      token: ${{ secrets.PUSH_TOKEN }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PUSH_TOKEN }} # Use a PAT with repo scope for pushing
 
-  - name: Set up Python
-    uses: actions/setup-python@v5
-    with:
-      python-version: '3.10'
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
 
-  - name: Install Python Dependencies
-    run: |
-      python -m pip install --upgrade pip
-      pip install requests
+      - name: Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
 
-  - name: Run Key Tester Script
-    env:
-      SOURCE_URLS_SECRET: ${{ secrets.SOURCE_URLS_SECRET }}
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    run: python test_and_upload.py
+      - name: Run Key Tester Script
+        env:
+          SOURCE_URLS_SECRET: ${{ secrets.SOURCE_URLS_SECRET }}
+          # GITHUB_TOKEN is automatically available, no need to pass explicitly unless needed by the script itself
+          # GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python test_and_upload.py
 
-  - name: Commit and Push Result
-    env:
-      PUSH_TOKEN: ${{ secrets.PUSH_TOKEN }}
-    run: |
-      FILE="subscription/working_keys.txt"
-      if [ -f "$FILE" ]; then
-        git config --global user.name 'KeyBot'
-        git config --global user.email 'keybot@users.noreply.github.com'
-        git add "$FILE"
-        git commit -m "Update working keys [CI Auto]"
-        git push
-      fi
-
+      - name: Commit and Push Result
+        # Removed env block for PUSH_TOKEN as it's not directly used in the run script
+        # env:
+        #   PUSH_TOKEN: ${{ secrets.PUSH_TOKEN }} # This token is used by checkout for pushing
+        run: |
+          FILE="subscription/working_keys.txt"
+          # Check if the file exists and has changes
+          if git status --porcelain "$FILE" | grep -qE '^[AM]'; then
+            echo "Changes detected in $FILE. Committing and pushing..."
+            git config --global user.name 'KeyBot'
+            git config --global user.email 'keybot@users.noreply.github.com'
+            git add "$FILE"
+            git commit -m "Update working keys [CI Auto]"
+            # Retry push on failure (e.g., network issues or race conditions)
+            git push || (sleep 5 && git pull --rebase && git push)
+          else
+            echo "No changes detected in $FILE. Nothing to commit."
+          fi
