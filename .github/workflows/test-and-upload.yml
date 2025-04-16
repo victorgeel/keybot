@@ -1,153 +1,85 @@
-# Workflow Name
-name: Test Keys and Upload Consolidated
+name: V2Ray Key Tester CI
 
-on:
-  schedule:
-    # Run every 30 minutes (UTC time)
-    - cron: '*/30 * * * *'
-  workflow_dispatch: # Allows manual triggering
+on: schedule: - cron: '*/30 * * * *' # Run every 30 minutes workflow_dispatch:
 
-jobs:
-  test-and-upload:
-    runs-on: ubuntu-latest # Use Linux runner
-    # Optional: Add timeout for the job
-    timeout-minutes: 15 # Example: kill job if it runs longer than 15 mins
+jobs: run-key-tester: runs-on: ubuntu-latest timeout-minutes: 15
 
-    steps:
-      # 1. Checkout repository code using PUSH_TOKEN
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.PUSH_TOKEN }} # Use PAT for push access later
-          persist-credentials: false
+steps:
+  - name: Checkout Repository
+    uses: actions/checkout@v4
+    with:
+      token: ${{ secrets.PUSH_TOKEN }}
+      persist-credentials: false
 
-      # 2. Set up Python environment
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10' # Specify Python version
-          cache: 'pip' # Cache pip dependencies
+  - name: Set up Python
+    uses: actions/setup-python@v5
+    with:
+      python-version: '3.10'
+      cache: 'pip'
 
-      # 3. Install Python dependencies from requirements.txt
-      - name: Install Python dependencies
-        run: |
-          python -m pip install --upgrade pip
-          if [ -f requirements.txt ]; then
-            pip install -r requirements.txt
-          else
-            echo "requirements.txt not found. Assuming 'requests' is needed."
-            pip install requests # Install requests if requirements.txt is missing
-          fi
+  - name: Install Python Dependencies
+    run: |
+      python -m pip install --upgrade pip
+      pip install requests
 
-      # 4. Run the Python Key Tester Script
-      - name: Run Key Tester Script
-        env:
-          # Pass the source URLs (multiline string) from secrets
-          SOURCE_URLS_SECRET: ${{ secrets.SOURCE_URLS_SECRET }}
-          # GitHub token for Xray download API calls (uses default Actions token)
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        # Execute the python script
-        run: python test_and_upload.py # Make sure script filename is correct
+  - name: Run Key Tester Script
+    env:
+      SOURCE_URLS_SECRET: ${{ secrets.SOURCE_URLS_SECRET }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    run: python test_and_upload.py
 
-      # 5. Commit and Push the SINGLE Subscription File using PUSH_TOKEN
-      - name: Commit and Push Consolidated Subscription File
-        run: |
-          SUB_DIR="subscription"
-          OUTPUT_FILE="working_keys.txt"
-          OUTPUT_FILE_PATH="${SUB_DIR}/${OUTPUT_FILE}"
+  - name: Commit and Push Result
+    run: |
+      FILE="subscription/working_keys.txt"
+      if [ ! -f "$FILE" ]; then
+        echo "No output found. Skipping commit."
+        exit 0
+      fi
 
-          if [ ! -f "${OUTPUT_FILE_PATH}" ]; then
-            echo "Output file '${OUTPUT_FILE_PATH}' not found. Nothing to commit."
-            exit 0
-          fi
+      git config --global user.name "github-actions[bot]"
+      git config --global user.email "github-actions[bot]@users.noreply.github.com"
+      git add $FILE
 
-          echo "Configuring Git user..."
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+      if git diff --staged --quiet; then
+        echo "No changes to commit."
+      else
+        git commit -m "Update working keys [skip ci]"
+        git remote set-url origin https://x-access-token:${{ secrets.PUSH_TOKEN }}@github.com/${{ github.repository }}
+        git push --force origin HEAD:${{ github.ref_name }}
 
-          echo "Adding file '${OUTPUT_FILE_PATH}'..."
-          git add ${OUTPUT_FILE_PATH}
+  - name: Install rclone
+    run: |
+      sudo apt-get update -qq
+      sudo apt-get install -y rclone
 
-          echo "Checking for staged changes..."
-          if git diff --staged --quiet; then
-            echo "No changes detected in '${OUTPUT_FILE_PATH}' to commit."
-          else
-            echo "Changes detected. Committing..."
-            git commit -m "Update consolidated working keys (${OUTPUT_FILE}) [skip ci]"
+  - name: Configure rclone for Cloudflare R2
+    env:
+      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+    run: |
+      rclone config create R2 s3 \
+        provider=Cloudflare \
+        access_key_id=$R2_ACCESS_KEY_ID \
+        secret_access_key=$R2_SECRET_ACCESS_KEY \
+        endpoint=$R2_ENDPOINT \
+        acl=public-read
 
-            echo "Setting remote URL with PUSH_TOKEN for push..."
-            git remote set-url origin https://x-access-token:${{ secrets.PUSH_TOKEN }}@github.com/${{ github.repository }}
+  - name: Upload File to R2
+    env:
+      R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+    run: |
+      FILE="subscription/working_keys.txt"
+      TARGET="R2:${R2_BUCKET_NAME}/working_keys.txt"
+      if [ -f "$FILE" ]; then
+        rclone copyto --checksum --verbose --retries 3 "$FILE" "$TARGET"
+      else
+        echo "Output file not found. Skipping R2 upload."
 
-            echo "Pushing changes to branch ${{ github.ref_name }} (force)..."
-            # Use --force to overwrite remote history (ensure branch protection allows this)
-            git push --force origin HEAD:${{ github.ref_name }}
-            echo "Force push completed successfully."
-          fi
-        # Optional: Uncomment below if R2 upload should proceed even if push fails
-        # continue-on-error: true
+  # Optional: Clean up
+  - name: Clean Workspace
+    if: always()
+    run: |
+      rm -rf ./subscription/
+      rm -f ./xray
 
-      # 6. Install rclone for R2 Upload
-      - name: Install rclone
-        run: |
-          sudo apt-get update -qq # Use -qq for quieter update
-          sudo apt-get install -y rclone
-
-      # 7. Configure rclone for Cloudflare R2 using Secrets
-      - name: Configure rclone for Cloudflare R2
-        env:
-          # Pass R2 credentials from repository secrets
-          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }} # Use account-scoped endpoint secret value
-          R2_BUCKET_NAME_DEBUG: ${{ secrets.R2_BUCKET_NAME }} # For debug log below
-        run: |
-          echo "--- Debug: Verifying R2 Env Vars ---"
-          echo "R2_ACCESS_KEY_ID (Length): ${#R2_ACCESS_KEY_ID}" # Print length only for verification
-          echo "R2_ENDPOINT: $R2_ENDPOINT"
-          echo "R2_BUCKET_NAME_DEBUG: $R2_BUCKET_NAME_DEBUG"
-          # DO NOT PRINT R2_SECRET_ACCESS_KEY
-          echo "--- End Debug ---"
-
-          # Check if essential vars seem set (basic check)
-          if [ -z "$R2_ACCESS_KEY_ID" ] || [ -z "$R2_SECRET_ACCESS_KEY" ] || [ -z "$R2_ENDPOINT" ]; then
-            echo "Error: One or more R2 configuration environment variables (ID, Secret, Endpoint) are empty or not passed correctly from secrets."
-            exit 1
-          fi
-
-          echo "Creating rclone config for R2 remote..."
-          # Configure rclone with Cloudflare provider and credentials/endpoint
-          rclone config create R2 s3 \
-            provider=Cloudflare \
-            access_key_id=$R2_ACCESS_KEY_ID \
-            secret_access_key=$R2_SECRET_ACCESS_KEY \
-            endpoint=$R2_ENDPOINT \
-            acl=public-read # Make uploaded file publicly readable for Worker fetch
-          echo "rclone configured for R2."
-
-      # 8. Upload the SINGLE working key file to R2 Bucket
-      - name: Upload working key file to R2 Bucket
-        env:
-          # Pass R2 bucket name from secrets
-          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
-        run: |
-          LOCAL_FILE="./subscription/working_keys.txt"
-          # Construct target R2 path: RemoteName:BucketName/ObjectName
-          R2_TARGET_FILE="R2:${R2_BUCKET_NAME}/working_keys.txt"
-
-          if [ -f "${LOCAL_FILE}" ]; then
-            echo "Output file '${LOCAL_FILE}' found. Attempting upload to R2: ${R2_TARGET_FILE}"
-            # Use copyto for single file upload, ensures overwrite. Added retries for transient errors.
-            rclone copyto --checksum --progress --verbose --retries 3 --retries-sleep 3s "${LOCAL_FILE}" "${R2_TARGET_FILE}"
-            echo "R2 Upload command finished (Check logs above for success/errors)."
-          else
-            echo "Output file '${LOCAL_FILE}' not found. Skipping R2 upload."
-          fi
-
-      # 9. Clean up local files (Optional)
-      # - name: Clean up local files
-      #   if: always() # Run even if previous steps fail
-      #   run: |
-      #     echo "Removing local directory ./subscription/ ..."
-      #     rm -rf ./subscription/
-      #     echo "Removing xray executable..."
-      #     rm -f ./xray
