@@ -2,13 +2,12 @@
 # -*- coding: utf-8 -*-
 
 # FILE: test_and_upload.py
-# Description: Fetches and processes Hysteria/Hysteria2 subscription links,
+# Description: Fetches and processes Hysteria/Hysteria2 subscription links (various URI formats),
 #              saves them to separate files.
-# Version: 3.2 (Removed xray test, split output files)
+# Version: 3.4 (Enhanced URI format detection)
 
 import requests
 import os
-import base64
 import re
 import sys
 from urllib.parse import urlparse
@@ -40,25 +39,37 @@ REQUEST_TIMEOUT = 25
 print(f"Subscription fetch timeout: {REQUEST_TIMEOUT}s")
 
 REQUEST_HEADERS = {
-    'User-Agent': f'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36 KeyTester/3.2'
+    'User-Agent': f'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36 KeyTester/3.4'
 }
 print(f"Subscription Fetch Headers: {REQUEST_HEADERS}")
 print("--- End Configuration ---")
 
-def decode_base64_url(encoded_url):
-    """Decodes a base64 encoded URL."""
+def is_valid_hysteria_uri(uri):
+    """Checks if a URI looks like a valid Hysteria URI."""
     try:
-        padding = '=' * (-len(encoded_url) % 4)
-        decoded_bytes = base64.urlsafe_b64decode(encoded_url + padding)
-        return decoded_bytes.decode('utf-8', errors='replace')
-    except Exception as e:
-        print(f"Error decoding base64 URL: {e}", file=sys.stderr)
-        return None
+        parsed_uri = urlparse(uri)
+        if parsed_uri.scheme == "hysteria":
+            if parsed_uri.netloc and ":" in parsed_uri.netloc:
+                return True
+    except:
+        pass
+    return False
+
+def is_valid_hysteria2_uri(uri):
+    """Checks if a URI looks like a valid Hysteria2 URI."""
+    try:
+        parsed_uri = urlparse(uri)
+        if parsed_uri.scheme == "hy2":
+            if parsed_uri.netloc and ":" in parsed_uri.netloc:
+                return True
+    except:
+        pass
+    return False
 
 def main():
     """Main function."""
     script_start_time = time.time()
-    print(f"\n=== Starting Hysteria/Hysteria2 Link Fetcher (v3.2) at {time.strftime('%Y-%m-%d %H:%M:%S %Z')} ===")
+    print(f"\n=== Starting Enhanced Hysteria/Hysteria2 Link Fetcher (v3.4) at {time.strftime('%Y-%m-%d %H:%M:%S %Z')} ===")
 
     # Step 1: Output Dir
     print(f"\n--- Step 1: Output Dir ({OUTPUT_DIR}) ---")
@@ -81,51 +92,19 @@ def main():
         try:
             response = requests.get(url, timeout=REQUEST_TIMEOUT, headers=REQUEST_HEADERS, allow_redirects=True)
             response.raise_for_status()
-            raw_data = None
-            try:
-                raw_data = response.content.decode('utf-8')
-                print(f"  Decoded UTF-8.")
-            except UnicodeDecodeError:
-                try:
-                    encoding = response.encoding if response.encoding else response.apparent_encoding
-                    encoding = encoding if encoding else 'iso-8859-1'
-                    raw_data = response.content.decode(encoding, errors='replace')
-                    print(f"  Decoded {encoding}.")
-                except Exception as decode_err:
-                    raw_data = response.content.decode('iso-8859-1', errors='replace')
-                    print(f"  ERROR: Decode failed: {decode_err}.", file=sys.stderr)
-                    fetch_errors += 1
-
+            raw_data = response.content.decode('utf-8', errors='ignore')
             lines = raw_data.splitlines()
-            count_for_source = 0
+
             for line in lines:
                 line = line.strip()
-                if line:
-                    if line.startswith("hysteria://"):
-                        hysteria_links.add(line)
-                        count_for_source += 1
-                    elif line.startswith("hy2://"):
-                        hysteria2_links.add(line)
-                        count_for_source += 1
-                    elif base64.b64encode(base64.b64decode(line)).decode('utf-8') == line:
-                        decoded_url = base64.b64decode(line).decode('utf-8', errors='ignore').strip()
-                        if decoded_url.startswith("hysteria://"):
-                            hysteria_links.add(decoded_url)
-                            count_for_source += 1
-                        elif decoded_url.startswith("hy2://"):
-                            hysteria2_links.add(decoded_url)
-                            count_for_source += 1
-                    elif base64.urlsafe_b64encode(base64.urlsafe_b64decode(line + '=' * (-len(line) % 4))).decode('utf-8').rstrip('=') == line:
-                        decoded_url = decode_base64_url(line)
-                        if decoded_url:
-                            if decoded_url.startswith("hysteria://"):
-                                hysteria_links.add(decoded_url)
-                                count_for_source += 1
-                            elif decoded_url.startswith("hy2://"):
-                                hysteria2_links.add(decoded_url)
-                                count_for_source += 1
-            total_lines_fetched += count_for_source
-            print(f" -> Fetched and processed {count_for_source} lines from this source.")
+                if is_valid_hysteria_uri(line):
+                    hysteria_links.add(line)
+                elif is_valid_hysteria2_uri(line):
+                    hysteria2_links.add(line)
+
+            fetched_count = len(hysteria_links) + len(hysteria2_links) - (total_lines_fetched - len(hysteria_links) - len(hysteria2_links)) # Calculate new links
+            total_lines_fetched = len(hysteria_links) + len(hysteria2_links)
+            print(f" -> Fetched and processed {fetched_count} new links from this source.")
 
         except requests.exceptions.Timeout:
             print(f"ERROR: Timeout {url[:100]}", file=sys.stderr)
@@ -136,9 +115,10 @@ def main():
         except Exception as e:
             print(f"ERROR: Processing {url[:100]}: {e}", file=sys.stderr)
             fetch_errors += 1
-            traceback.print_exc(file=sys.stderr)
+            import traceback
+            traceback.print_exc()
 
-    print(f"\nFetch done. Processed lines: {total_lines_fetched}. Errors: {fetch_errors}.")
+    print(f"\nFetch done. Processed links: {total_lines_fetched}. Errors: {fetch_errors}.")
     print(f"Found {len(hysteria_links)} hysteria links.")
     print(f"Found {len(hysteria2_links)} hysteria2 links.")
 
@@ -179,5 +159,4 @@ def main():
 # --- Entry Point ---
 if __name__ == "__main__":
     import time
-    import traceback
     main()
