@@ -1,5 +1,5 @@
 # Workflow Name
-name: Fetch and Upload Hysteria Keys
+name: Fetch, Commit, and Upload Hysteria Keys to R2
 
 on:
   schedule:
@@ -8,9 +8,9 @@ on:
   workflow_dispatch: # Allows manual triggering from Actions tab
 
 jobs:
-  fetch-and-upload:
+  fetch-commit-upload: # Job name changed slightly for clarity
     runs-on: ubuntu-latest # Use Linux runner
-    timeout-minutes: 10 # Adjusted timeout
+    timeout-minutes: 10 # Timeout for the entire job
 
     steps:
       # 1. Checkout repository code using PUSH_TOKEN for push access
@@ -34,12 +34,12 @@ jobs:
           pip install requests
           echo "Installed required Python packages (requests)."
 
-      # 4. Run the Python Script
+      # 4. Run the Python Script to fetch keys
       - name: Run Key Fetcher Script
         id: run-fetcher
-        run: python test_and_upload.py # Ensure this filename matches your script
+        run: python test_and_upload.py # Make sure this filename matches your script in the repo
 
-      # 5. Commit and Push Hysteria Files
+      # 5. Commit and Push Hysteria Files to Git Repo
       - name: Commit and Push Hysteria Files
         env:
           GIT_PUSH_TOKEN: ${{ secrets.PUSH_TOKEN }} # Pass token explicitly
@@ -51,24 +51,30 @@ jobs:
           HYSTERIA2_OUTPUT_PATH="${SUB_DIR}/${HYSTERIA2_OUTPUT_FILE}"
 
           echo "Configuring Git user..."
+          # Use a generic bot name or your preferred bot identity
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
 
+          # Add both files; git will only stage if they exist or changed
           git add ${HYSTERIA_OUTPUT_PATH} ${HYSTERIA2_OUTPUT_PATH}
 
-          echo "Checking for staged changes..."
+          echo "Checking for staged changes in Hysteria files..."
+          # Check if there are staged changes to commit
           if git diff --staged --quiet; then
-            echo "No changes detected in output files to commit."
+            echo "No changes detected in output files (${HYSTERIA_OUTPUT_FILE}, ${HYSTERIA2_OUTPUT_FILE}) to commit."
           else
             echo "Changes detected. Committing..."
             COMMIT_MESSAGE="Update hysteria/hysteria2 keys [skip ci]"
+            # Add workflow run ID for traceability
             COMMIT_MESSAGE="${COMMIT_MESSAGE} (Workflow Run: ${{ github.run_id }})"
             git commit -m "${COMMIT_MESSAGE}"
 
             echo "Setting remote URL with token for push..."
+            # Use the GITHUB_TOKEN or the provided PUSH_TOKEN for authentication
             git remote set-url origin https://x-access-token:${GIT_PUSH_TOKEN}@github.com/${{ github.repository }}
 
             echo "Pushing changes to branch '${{ github.ref_name }}'..."
+            # Push the commit to the same branch the workflow is running on
             git push origin HEAD:${{ github.ref_name }}
           fi
 
@@ -76,6 +82,7 @@ jobs:
       - name: Install rclone
         run: |
           echo "Installing rclone..."
+          # Use -qq for quieter output during update/install
           sudo apt-get update -qq
           sudo apt-get install -y rclone
           echo "rclone installed successfully."
@@ -87,18 +94,50 @@ jobs:
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }} # Use account-scoped endpoint secret value
-          R2_BUCKET_NAME_DEBUG: ${{ secrets.R2_BUCKET_NAME }} # For debug log only
         run: |
-          # Essential check for secrets presence
+          # Essential check for secrets presence (Optional but recommended)
           echo "--- Verifying R2 Env Vars ---"
           if [ -z "$R2_ACCESS_KEY_ID" ]; then echo "Error: R2_ACCESS_KEY_ID secret is missing or empty." >&2; exit 1; fi
           if [ -z "$R2_SECRET_ACCESS_KEY" ]; then echo "Error: R2_SECRET_ACCESS_KEY secret is missing or empty." >&2; exit 1; fi
           if [ -z "$R2_ENDPOINT" ]; then echo "Error: R2_ENDPOINT secret is missing or empty." >&2; exit 1; fi
-          echo "R2_ACCESS_KEY_ID: Set (Length: ${#R2_ACCESS_KEY_ID})"
-          echo "R2_ENDPOINT: $R2_ENDPOINT"
-          echo "R2_BUCKET_NAME_DEBUG: $R2_BUCKET_NAME_DEBUG" # Debugging only
+          echo "R2 Env vars seem present."
           echo "--- End R2 Env Var Check ---"
 
           echo "Creating rclone config for R2 remote named 'R2Storage'..."
-          # Configure rclone using environment variables - creates temporary config in memory for this run
+          # Configure rclone using environment variables - creates temporary config in memory
+          # --- THIS IS THE CORRECTED COMMAND ---
           rclone config create R2Storage s3 \
+            provider=Cloudflare \
+            access_key_id="$R2_ACCESS_KEY_ID" \
+            secret_access_key="$R2_SECRET_ACCESS_KEY" \
+            endpoint="$R2_ENDPOINT" \
+            acl=private
+            # region=auto (Usually optional for R2)
+
+          echo "rclone temporary config for 'R2Storage' created."
+
+      # 8. Upload Files to Cloudflare R2
+      - name: Upload Files to Cloudflare R2
+        env:
+          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }} # Pass the bucket name secret
+        run: |
+          # Verify bucket name is set
+          if [ -z "$R2_BUCKET_NAME" ]; then echo "Error: R2_BUCKET_NAME secret is missing or empty." >&2; exit 1; fi
+
+          SOURCE_DIR="subscription" # Directory created by the Python script
+          DEST_PATH="R2Storage:${R2_BUCKET_NAME}/" # Destination: remote:bucket_name/
+
+          echo "Uploading contents of '${SOURCE_DIR}' to '${DEST_PATH}'..."
+
+          # Use rclone copy to upload the directory contents
+          # -v for verbose output to see which files are transferred
+          rclone copy "${SOURCE_DIR}" "${DEST_PATH}" -v --checksum --no-update-modtime
+
+          # Optional: Add error check - exits if rclone copy failed
+          if [ $? -ne 0 ]; then
+             echo "Error: rclone upload failed." >&2
+             exit 1
+          fi
+
+          echo "Upload to R2 completed successfully."
+
