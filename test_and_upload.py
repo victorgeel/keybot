@@ -18,6 +18,7 @@ print("--- Script Configuration ---")
 # (သင့်ရဲ့ URL list အမှန်ကို ဒီနေရာမှာ ထည့်ပါ)
 SOURCE_URLS = [
     "https://hysteria2.github.io/uploads/2025/04/0-20250425.txt",
+    "https://sub.nothing1.workers.dev/",
     "https://hysteria2.github.io/uploads/2025/04/1-20250425.txt",
     "https://hysteria2.github.io/uploads/2025/04/2-20250425.txt",
     "https://hysteria2.github.io/uploads/2025/04/3-20250425.txt",
