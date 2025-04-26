@@ -1,17 +1,16 @@
 # Workflow Name
-name: Test Keys and Upload Consolidated
+name: Fetch and Upload Hysteria Keys
 
 on:
   schedule:
     # Run every 30 minutes (UTC time)
-    # Example: Run at :00 and :30 past the hour
     - cron: '*/30 * * * *'
   workflow_dispatch: # Allows manual triggering from Actions tab
 
 jobs:
-  test-and-upload:
+  fetch-and-upload:
     runs-on: ubuntu-latest # Use Linux runner
-    timeout-minutes: 20 # Job timeout
+    timeout-minutes: 10 # Adjusted timeout
 
     steps:
       # 1. Checkout repository code using PUSH_TOKEN for push access
@@ -28,90 +27,50 @@ jobs:
           python-version: '3.10' # Specify Python version
           cache: 'pip' # Cache pip dependencies for faster installs
 
-      # 3. Install Python dependencies (REVISED: SOCKS no longer needed)
+      # 3. Install Python dependencies
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
-          # Install requests (still needed for fetching subscriptions)
           pip install requests
           echo "Installed required Python packages (requests)."
 
-      # 4. Run the Python Key Tester Script (using xray-knife)
-      - name: Run Key Tester Script
-        id: run-tester
-        env:
-          # Pass secrets to the Python script environment
-          SOURCE_URLS_SECRET: ${{ secrets.SOURCE_URLS_SECRET }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Use the default token for GitHub API calls
-        # Execute the Python script (make sure it's the modified version)
+      # 4. Run the Python Script
+      - name: Run Key Fetcher Script
+        id: run-fetcher
         run: python test_and_upload.py # Ensure this filename matches your script
 
-      # 5. Commit and Push the SINGLE Subscription File using PUSH_TOKEN
-      - name: Commit and Push Consolidated Subscription File
-        id: commit-push # Added an ID for potential future use
+      # 5. Commit and Push Hysteria Files
+      - name: Commit and Push Hysteria Files
         env:
           GIT_PUSH_TOKEN: ${{ secrets.PUSH_TOKEN }} # Pass token explicitly
         run: |
           SUB_DIR="subscription"
-          OUTPUT_FILE="working_keys.txt"
-          OUTPUT_FILE_PATH="${SUB_DIR}/${OUTPUT_FILE}"
-
-          # Add GITHUB_OUTPUT setup for cross-step communication
-          echo "changes_pushed=false" >> $GITHUB_OUTPUT
-
-          if [ ! -f "${OUTPUT_FILE_PATH}" ]; then
-            echo "Output file '${OUTPUT_FILE_PATH}' not found. Nothing to commit or push."
-            exit 0 # Exit successfully, nothing to do
-          fi
+          HYSTERIA_OUTPUT_FILE="hysteria.txt"
+          HYSTERIA2_OUTPUT_FILE="hysteria2.txt"
+          HYSTERIA_OUTPUT_PATH="${SUB_DIR}/${HYSTERIA_OUTPUT_FILE}"
+          HYSTERIA2_OUTPUT_PATH="${SUB_DIR}/${HYSTERIA2_OUTPUT_FILE}"
 
           echo "Configuring Git user..."
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
 
-          echo "Adding file '${OUTPUT_FILE_PATH}' to staging..."
-          git add ${OUTPUT_FILE_PATH}
+          git add ${HYSTERIA_OUTPUT_PATH} ${HYSTERIA2_OUTPUT_PATH}
 
           echo "Checking for staged changes..."
-          # Use exit code of diff to check for changes
           if git diff --staged --quiet; then
-            echo "No changes detected in '${OUTPUT_FILE_PATH}' to commit."
+            echo "No changes detected in output files to commit."
           else
             echo "Changes detected. Committing..."
-            # Add [skip ci] to prevent triggering another workflow run from this commit
-            COMMIT_MESSAGE="Update consolidated working keys (${OUTPUT_FILE}) [skip ci]"
-            # Include commit hash in message (optional but useful)
+            COMMIT_MESSAGE="Update hysteria/hysteria2 keys [skip ci]"
             COMMIT_MESSAGE="${COMMIT_MESSAGE} (Workflow Run: ${{ github.run_id }})"
             git commit -m "${COMMIT_MESSAGE}"
 
             echo "Setting remote URL with token for push..."
-            # Use the GITHUB_REPOSITORY variable which is always available
             git remote set-url origin https://x-access-token:${GIT_PUSH_TOKEN}@github.com/${{ github.repository }}
 
-            echo "Pushing changes to branch '${{ github.ref_name }}' (force)..."
-            # Use --force with caution. Ensures the repo reflects the latest test results.
-            # Added retry logic for push
-            PUSH_ATTEMPTS=3
-            PUSH_DELAY=5
-            for (( i=1; i<=PUSH_ATTEMPTS; i++ )); do
-              if git push --force origin HEAD:${{ github.ref_name }}; then
-                 echo "Force push completed successfully on attempt $i."
-                 echo "changes_pushed=true" >> $GITHUB_OUTPUT # Set output on success
-                 break # Exit loop on success
-              else
-                 echo "Error: Force push failed on attempt $i." >&2 # Send error to stderr
-                 if [ $i -lt $PUSH_ATTEMPTS ]; then
-                    echo "Retrying push in ${PUSH_DELAY} seconds..."
-                    sleep $PUSH_DELAY
-                 else
-                    echo "Max push attempts reached. Push failed." >&2
-                    # Keep changes_pushed as false (default)
-                    exit 1 # Exit with error if push fails after retries
-                 fi
-              fi
-            done
+            echo "Pushing changes to branch '${{ github.ref_name }}'..."
+            git push origin HEAD:${{ github.ref_name }}
           fi
-        # If the git push fails after retries, we might still want the R2 upload.
-        continue-on-error: true # Keep true to ensure R2 upload attempts even if push fails
 
       # 6. Install rclone for R2 Upload
       - name: Install rclone
@@ -125,7 +84,6 @@ jobs:
       # 7. Configure rclone for Cloudflare R2 using Secrets
       - name: Configure rclone for Cloudflare R2
         env:
-          # Pass R2 credentials safely from repository secrets
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }} # Use account-scoped endpoint secret value
@@ -144,54 +102,3 @@ jobs:
           echo "Creating rclone config for R2 remote named 'R2Storage'..."
           # Configure rclone using environment variables - creates temporary config in memory for this run
           rclone config create R2Storage s3 \
-            provider=Cloudflare \
-            access_key_id="$R2_ACCESS_KEY_ID" \
-            secret_access_key="$R2_SECRET_ACCESS_KEY" \
-            endpoint="$R2_ENDPOINT" \
-            acl=public-read # Make uploaded file publicly readable
-          echo "rclone configured for R2."
-          echo "Verifying configuration by listing remotes:"
-          rclone listremotes # Should show R2Storage:
-
-      # 8. Upload the SINGLE working key file to R2 Bucket
-      #    Only attempt upload if the file exists.
-      - name: Upload working key file to R2 Bucket
-        # Optionally, only upload if the file changed: steps.commit-push.outputs.changes_pushed == 'true'
-        # But current logic uploads even if no change, just overwrites. Keep as is unless specified.
-        if: success() || steps.commit-push.outcome == 'success' # Run if previous steps succeeded OR commit step succeeded even with continue-on-error
-        env:
-          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
-        run: |
-          LOCAL_FILE="./subscription/working_keys.txt"
-          R2_TARGET_PATH="R2Storage:${R2_BUCKET_NAME}/working_keys.txt" # Use configured remote name
-
-          if [ -z "$R2_BUCKET_NAME" ]; then
-            echo "Error: R2_BUCKET_NAME secret is missing or empty. Cannot upload." >&2
-            exit 1
-          fi
-
-          if [ -f "${LOCAL_FILE}" ]; then
-            echo "Output file '${LOCAL_FILE}' found. Attempting upload to R2: ${R2_TARGET_PATH}"
-            # Using copyto for single file upload. Added flags for reliability.
-            rclone copyto --checksum --progress --retries 3 --retries-sleep 5s --s3-upload-concurrency 8 --s3-chunk-size 16M "${LOCAL_FILE}" "${R2_TARGET_PATH}"
-            UPLOAD_EXIT_CODE=$?
-            if [ $UPLOAD_EXIT_CODE -eq 0 ]; then
-               echo "R2 Upload command finished successfully."
-            else
-               echo "Error: R2 Upload command failed with exit code $UPLOAD_EXIT_CODE." >&2
-               exit $UPLOAD_EXIT_CODE # Exit with rclone's error code
-            fi
-          else
-            echo "Output file '${LOCAL_FILE}' not found. Skipping R2 upload."
-          fi
-
-      # 9. Clean up local files (Optional - generally not needed in Actions runners)
-      # - name: Clean up local files
-      #   if: always() # Run even if previous steps fail
-      #   run: |
-      #     echo "Removing local directory ./subscription/ ..."
-      #     rm -rf ./subscription/
-      #     echo "Removing xray-knife executable..."
-      #     rm -f ./xray-knife
-      #     echo "Cleanup complete."
-
