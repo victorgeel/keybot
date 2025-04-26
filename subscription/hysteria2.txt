@@ -22,6 +22,7 @@ hy2://43326134-a0c8-4149-8a6d-8128791a16c7@152.53.125.70:5002?insecure=1&sni=d1-
 hy2://43326134-a0c8-4149-8a6d-8128791a16c7@217.142.186.28:5002?insecure=1&sni=d1--cn-gotcha204-3.bilivideo.com#
 hy2://4c0014ad-562c-4dc9-979e-4241bed0f22a@107.189.14.30:443?mport=22001-22999#
 hy2://4c0014ad-562c-4dc9-979e-4241bed0f22a@54.199.14.212:443?mport=22001-22999#
+hy2://4de5bc14-2c4d-4321-8d95-e6ff3bf0f91a@1.170.215.211:16666?insecure=1#
 hy2://4e9ee29b39a28277@
 hy2://4e9ee29b39a28277@66.135.11.68:443?obfs=salamander&obfs-password=13f7ba5f&insecure=1&sni=wrmelmwxlf.gktevlrqznwqqqozy6hgvqxwfmfs%20vgvs6c7kjnrubuh.cc#
 hy2://50a88b3f@38.207.130.91:2308?insecure=1&sni=www.bing.com#
