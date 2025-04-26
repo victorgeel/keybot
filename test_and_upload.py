@@ -2,14 +2,15 @@
 # -*- coding: utf-8 -*-
 
 # FILE: test_and_upload.py
-# Description: Fetches and processes Hysteria/Hysteria2 subscription links (various URI formats),
+# Description: Fetches and processes mixed Hysteria/Hysteria2 subscription links (plain & base64),
 #              saves them to separate files.
-# Version: 3.4 (Enhanced URI format detection)
+# Version: 3.7 (Handles mixed plain and base64 encoded links)
 
 import requests
 import os
 import re
 import sys
+import base64
 from urllib.parse import urlparse
 
 # --- Configuration ---
@@ -39,37 +40,31 @@ REQUEST_TIMEOUT = 25
 print(f"Subscription fetch timeout: {REQUEST_TIMEOUT}s")
 
 REQUEST_HEADERS = {
-    'User-Agent': f'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36 KeyTester/3.4'
+    'User-Agent': f'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36 KeyTester/3.7'
 }
 print(f"Subscription Fetch Headers: {REQUEST_HEADERS}")
 print("--- End Configuration ---")
 
-def is_valid_hysteria_uri(uri):
-    """Checks if a URI looks like a valid Hysteria URI."""
-    try:
-        parsed_uri = urlparse(uri)
-        if parsed_uri.scheme == "hysteria":
-            if parsed_uri.netloc and ":" in parsed_uri.netloc:
-                return True
-    except:
-        pass
-    return False
+def find_hysteria_links(text):
+    """Finds Hysteria links in a given text."""
+    return re.findall(r"hysteria:\/\/[\w\d\.:\/?=&%#]+", text)
 
-def is_valid_hysteria2_uri(uri):
-    """Checks if a URI looks like a valid Hysteria2 URI."""
+def find_hysteria2_links(text):
+    """Finds Hysteria2 links in a given text."""
+    return re.findall(r"hy2:\/\/[\w\d\.\-@:\/?=&%#]+", text)
+
+def decode_base64_text(encoded_text):
+    """Tries to decode a base64 encoded text."""
     try:
-        parsed_uri = urlparse(uri)
-        if parsed_uri.scheme == "hy2":
-            if parsed_uri.netloc and ":" in parsed_uri.netloc:
-                return True
-    except:
-        pass
-    return False
+        padding = '=' * (-len(encoded_text) % 4)
+        return base64.b64decode(encoded_text + padding).decode('utf-8', errors='ignore')
+    except Exception:
+        return None
 
 def main():
     """Main function."""
     script_start_time = time.time()
-    print(f"\n=== Starting Enhanced Hysteria/Hysteria2 Link Fetcher (v3.4) at {time.strftime('%Y-%m-%d %H:%M:%S %Z')} ===")
+    print(f"\n=== Starting Mixed-Format Hysteria/Hysteria2 Link Fetcher (v3.7) at {time.strftime('%Y-%m-%d %H:%M:%S %Z')} ===")
 
     # Step 1: Output Dir
     print(f"\n--- Step 1: Output Dir ({OUTPUT_DIR}) ---")
@@ -97,12 +92,18 @@ def main():
 
             for line in lines:
                 line = line.strip()
-                if is_valid_hysteria_uri(line):
-                    hysteria_links.add(line)
-                elif is_valid_hysteria2_uri(line):
-                    hysteria2_links.add(line)
 
-            fetched_count = len(hysteria_links) + len(hysteria2_links) - (total_lines_fetched - len(hysteria_links) - len(hysteria2_links)) # Calculate new links
+                # Check for plain text links
+                hysteria_links.update(find_hysteria_links(line))
+                hysteria2_links.update(find_hysteria2_links(line))
+
+                # Try to decode as base64
+                decoded_text = decode_base64_text(line)
+                if decoded_text:
+                    hysteria_links.update(find_hysteria_links(decoded_text))
+                    hysteria2_links.update(find_hysteria2_links(decoded_text))
+
+            fetched_count = len(hysteria_links) + len(hysteria2_links) - total_lines_fetched
             total_lines_fetched = len(hysteria_links) + len(hysteria2_links)
             print(f" -> Fetched and processed {fetched_count} new links from this source.")
 
@@ -127,36 +128,4 @@ def main():
 
     # Write Hysteria Links
     try:
-        with open(HYSTERIA_OUTPUT_PATH, 'w', encoding='utf-8', newline='\n') as f:
-            for link in sorted(list(hysteria_links)):
-                f.write(link + '\n')
-        print(f"Wrote {len(hysteria_links)} hysteria links to: {HYSTERIA_OUTPUT_PATH}")
-        print(f"Abs path: {os.path.abspath(HYSTERIA_OUTPUT_PATH)}")
-    except IOError as e_w:
-        print(f"ERROR writing file {HYSTERIA_OUTPUT_PATH}: {e_w}", file=sys.stderr)
-        sys.exit(1)
-
-    # Write Hysteria2 Links
-    try:
-        with open(HYSTERIA2_OUTPUT_PATH, 'w', encoding='utf-8', newline='\n') as f:
-            for link in sorted(list(hysteria2_links)):
-                f.write(link + '\n')
-        print(f"Wrote {len(hysteria2_links)} hysteria2 links to: {HYSTERIA2_OUTPUT_PATH}")
-        print(f"Abs path: {os.path.abspath(HYSTERIA2_OUTPUT_PATH)}")
-    except IOError as e_w:
-        print(f"ERROR writing file {HYSTERIA2_OUTPUT_PATH}: {e_w}", file=sys.stderr)
-        sys.exit(1)
-
-    # Step 4: Final Summary
-    print("\n--- Script Summary ---")
-    script_end_time = time.time()
-    total_time = script_end_time - script_start_time
-    print(f"Hysteria Links Collected: {len(hysteria_links)}")
-    print(f"Hysteria2 Links Collected: {len(hysteria2_links)}")
-    print(f"Finished in {total_time:.2f} seconds.")
-    print("======================================================")
-
-# --- Entry Point ---
-if __name__ == "__main__":
-    import time
-    main()
+        with open(HYSTERIA_OUTPUT_PATH, 'w', encoding='utf-
