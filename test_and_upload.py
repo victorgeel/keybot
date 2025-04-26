@@ -128,4 +128,21 @@ def main():
 
     # Write Hysteria Links
     try:
-        with open(HYSTERIA_OUTPUT_PATH, 'w', encoding='utf-
+        with open(HYSTERIA_OUTPUT_PATH, 'w', encoding='utf-8', newline='\n') as f:
+            for link in sorted(list(hysteria_links)):
+                f.write(link + '\n')
+        print(f"Wrote {len(hysteria_links)} hysteria links to: {HYSTERIA_OUTPUT_PATH}")
+        print(f"Abs path: {os.path.abspath(HYSTERIA_OUTPUT_PATH)}")
+    except IOError as e_w:
+        print(f"ERROR writing file {HYSTERIA_OUTPUT_PATH}: {e_w}", file=sys.stderr)
+        sys.exit(1)
+
+    # Write Hysteria2 Links
+    try:
+        with open(HYSTERIA2_OUTPUT_PATH, 'w', encoding='utf-8', newline='\n') as f:
+            for link in sorted(list(hysteria2_links)):
+                f.write(link + '\n')
+        print(f"Wrote {len(hysteria2_links)} hysteria2 links to: {HYSTERIA2_OUTPUT_PATH}")
+        print(f"Abs path: {os.path.abspath(HYSTERIA2_OUTPUT_PATH)}")
+    except IOError as e_w:
+        print(f"ERROR writing file {HYSTERIA2_OUTPUT_PATH}: {e_w}", file=sys.stderr)
