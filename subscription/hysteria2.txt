@@ -3,7 +3,6 @@ hy2://06130ef4-30cd-46cb-8f5b-f8fa8a4b9595@212.192.12.154:33002?insecure=1&obfs=
 hy2://14bdcd31-8a9f-4cf1-8fcc-60045900357d@107.175.34.118:3002?sni=us.10101251.xyz#
 hy2://18240b2dfdd76484@70.34.207.153:443?obfs=salamander&obfs-password=d2648ec2&insecure=1&sni=70.34.207.153#
 hy2://18463200c271aa6d@45.63.116.113:443?insecure=1&sni=vkvd127.mycdn.me&obfs=salamander&obfs-password=6c80ade6#
-hy2://18463200c271aa6d@45.63.116.113:443?obfs=salamander&obfs-password=6c80ade6&insecure=1&sni=vkvd127.mycdn.me#
 hy2://19603dd4-f56d-44b1-9f09-6f77711d5889@194.87.10.228:45644?insecure=1&sni=s0.awsstatic.com&obfs=salamander&obfs-password=ZDQxZDhjZDk4ZjAwYjIwNA%3D%3D#
 hy2://19603dd4-f56d-44b1-9f09-6f77711d5889@207.174.28.220:45644?insecure=1&sni=s0.awsstatic.com&obfs=salamander&obfs-password=ZDQxZDhjZDk4ZjAwYjIwNA%3D%3D#
 hy2://19603dd4-f56d-44b1-9f09-6f77711d5889@85.239.53.214:45644?insecure=1&sni=s0.awsstatic.com&obfs=salamander&obfs-password=ZDQxZDhjZDk4ZjAwYjIwNA%3D%3D#
