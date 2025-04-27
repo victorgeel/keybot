@@ -3,6 +3,7 @@ hy2://06130ef4-30cd-46cb-8f5b-f8fa8a4b9595@212.192.12.154:33002?insecure=1&obfs=
 hy2://14bdcd31-8a9f-4cf1-8fcc-60045900357d@107.175.34.118:3002?sni=us.10101251.xyz#
 hy2://18240b2dfdd76484@70.34.207.153:443?obfs=salamander&obfs-password=d2648ec2&insecure=1&sni=70.34.207.153#
 hy2://18463200c271aa6d@45.63.116.113:443?insecure=1&sni=vkvd127.mycdn.me&obfs=salamander&obfs-password=6c80ade6#
+hy2://18463200c271aa6d@45.63.116.113:443?obfs=salamander&obfs-password=6c80ade6&insecure=1&sni=vkvd127.mycdn.me#
 hy2://19603dd4-f56d-44b1-9f09-6f77711d5889@194.87.10.228:45644?insecure=1&sni=s0.awsstatic.com&obfs=salamander&obfs-password=ZDQxZDhjZDk4ZjAwYjIwNA%3D%3D#
 hy2://19603dd4-f56d-44b1-9f09-6f77711d5889@207.174.28.220:45644?insecure=1&sni=s0.awsstatic.com&obfs=salamander&obfs-password=ZDQxZDhjZDk4ZjAwYjIwNA%3D%3D#
 hy2://19603dd4-f56d-44b1-9f09-6f77711d5889@85.239.53.214:45644?insecure=1&sni=s0.awsstatic.com&obfs=salamander&obfs-password=ZDQxZDhjZDk4ZjAwYjIwNA%3D%3D#
@@ -59,6 +60,7 @@ hy2://cfe032e4-1bc3-454f-9d09-301b0aea08ff@192.18.145.7:45979?insecure=1&sni=www
 hy2://d44279ff-16ff-4d16-beca-8a46ad7ddbc5@193.25.215.154:443?mport=34000-35000&insecure=1&sni=123.1234567890spcloud.com#
 hy2://dongtaiwang.com@108.181.5.130:65232?insecure=1&sni=apple.com#
 hy2://dongtaiwang.com@195.154.33.70:23587?insecure=1&sni=www.bing.com#
+hy2://dongtaiwang.com@46.17.41.217:37481?insecure=1&sni=vkvd127.mycdn.me#
 hy2://dongtaiwang.com@46.17.41.217:37481?insecure=1&sni=www.bing.com#
 hy2://dongtaiwang.com@46.17.41.217:64816?insecure=1&sni=apple.com#
 hy2://dongtaiwang.com@46.17.41.5:12904?insecure=1&sni=apple.com#
