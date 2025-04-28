@@ -20,6 +20,9 @@ hy2://41639cd3-a901-413d-9de3-b659ce5ab888@94.159.107.136:1443?sni=de2.587458.xy
 hy2://43326134-a0c8-4149-8a6d-8128791a16c7@140.245.35.177:5002?insecure=1&sni=d1--cn-gotcha204-3.bilivideo.com#
 hy2://43326134-a0c8-4149-8a6d-8128791a16c7@152.53.125.70:5002?insecure=1&sni=d1--cn-gotcha204-3.bilivideo.com#
 hy2://43326134-a0c8-4149-8a6d-8128791a16c7@217.142.186.28:5002?insecure=1&sni=d1--cn-gotcha204-3.bilivideo.com#
+hy2://4494a8b7-de19-4b0f-85fb-4c3aab9654e4@139.162.17.136:443?mport=20000-50000&insecure=1&sni=www.bing.com#
+hy2://4494a8b7-de19-4b0f-85fb-4c3aab9654e4@139.162.37.41:443?mport=20000-50000&insecure=1&sni=www.bing.com#
+hy2://4494a8b7-de19-4b0f-85fb-4c3aab9654e4@91.124.30.24:443?mport=20000-50000&insecure=1&sni=www.bing.com#
 hy2://4c0014ad-562c-4dc9-979e-4241bed0f22a@107.189.14.30:443?mport=22001-22999#
 hy2://4c0014ad-562c-4dc9-979e-4241bed0f22a@54.199.14.212:443?mport=22001-22999#
 hy2://4de5bc14-2c4d-4321-8d95-e6ff3bf0f91a@1.170.215.211:16666?insecure=1#
@@ -47,6 +50,11 @@ hy2://b0pkiuXmIQsEQD9W_yT5rsGr@35.75.9.110:443?insecure=1&sni=www.cloudflare.com
 hy2://b0pkiuXmIQsEQD9W_yT5rsGr@35.76.31.203:443?insecure=1&sni=www.cloudflare.com#
 hy2://b24899a2-0e7a-458f-a858-5092bb4ff7aa@192.124.176.209:13301?insecure=1&sni=apple.com&obfs=salamander&obfs-password=ZDQxZDhjZDk4ZjAwYjIwNA%3D%3D#
 hy2://b24899a2-0e7a-458f-a858-5092bb4ff7aa@91.103.122.52:13301?insecure=1&sni=apple.com&obfs=salamander&obfs-password=ZDQxZDhjZDk4ZjAwYjIwNA%3D%3D#
+hy2://b5c516c0-80cf-4ecf-9f57-283deb8c247f@129.154.196.206:34512?insecure=1&sni=anycast.us.kg#
+hy2://b5c516c0-80cf-4ecf-9f57-283deb8c247f@146.56.102.200:34237?insecure=1&sni=anycast.us.kg#
+hy2://b5c516c0-80cf-4ecf-9f57-283deb8c247f@152.67.162.57:23848?insecure=1&sni=anycast.us.kg#
+hy2://b5c516c0-80cf-4ecf-9f57-283deb8c247f@178.128.55.224:34512?insecure=1&sni=anycast.us.kg#
+hy2://b5c516c0-80cf-4ecf-9f57-283deb8c247f@91.229.132.116:34512?insecure=1&sni=anycast.us.kg#
 hy2://b72ba5d5-2d5e-45b7-93b5-236d343baa7c@164.152.19.229:47262?insecure=1&sni=www.bing.com#
 hy2://b72ba5d5-2d5e-45b7-93b5-236d343baa7c@64.181.204.186:47262?insecure=1&sni=www.bing.com#
 hy2://bc65e87d-f3a7-46cc-b76c-da7ec1f0228b@195.58.49.84:31000?insecure=1&obfs=salamander&obfs-password=NDhhNmY5YTY0MGYzOTgxYQ%3D%3D#
@@ -59,6 +67,7 @@ hy2://cfe032e4-1bc3-454f-9d09-301b0aea08ff@192.18.145.7:45979?insecure=1&sni=www
 hy2://d44279ff-16ff-4d16-beca-8a46ad7ddbc5@193.25.215.154:443?mport=34000-35000&insecure=1&sni=123.1234567890spcloud.com#
 hy2://dongtaiwang.com@108.181.5.130:65232?insecure=1&sni=apple.com#
 hy2://dongtaiwang.com@195.154.33.70:23587?insecure=1&sni=www.bing.com#
+hy2://dongtaiwang.com@46.17.41.217:37481?insecure=1&sni=vkvd127.mycdn.me#
 hy2://dongtaiwang.com@46.17.41.217:37481?insecure=1&sni=www.bing.com#
 hy2://dongtaiwang.com@46.17.41.217:64816?insecure=1&sni=apple.com#
 hy2://dongtaiwang.com@46.17.41.5:12904?insecure=1&sni=apple.com#
