@@ -53,6 +53,7 @@ hy2://b24899a2-0e7a-458f-a858-5092bb4ff7aa@192.124.176.209:13301?insecure=1&sni=
 hy2://b24899a2-0e7a-458f-a858-5092bb4ff7aa@91.103.122.52:13301?insecure=1&sni=apple.com&obfs=salamander&obfs-password=ZDQxZDhjZDk4ZjAwYjIwNA%3D%3D#
 hy2://b4dd408a-542d-4898-8d43-47dcad8255e8@146.56.102.200:34237?insecure=1&sni=anycast.us.kg#
 hy2://b5c516c0-80cf-4ecf-9f57-283deb8c247f@129.154.196.206:34512?insecure=1&sni=anycast.us.kg#
+hy2://b5c516c0-80cf-4ecf-9f57-283deb8c247f@146.56.102.200:34237?insecure=1&sni=anycast.us.kg#
 hy2://b5c516c0-80cf-4ecf-9f57-283deb8c247f@152.67.162.57:23848?insecure=1&sni=anycast.us.kg#
 hy2://b5c516c0-80cf-4ecf-9f57-283deb8c247f@178.128.55.224:34512?insecure=1&sni=anycast.us.kg#
 hy2://b5c516c0-80cf-4ecf-9f57-283deb8c247f@91.229.132.116:34512?insecure=1&sni=anycast.us.kg#
