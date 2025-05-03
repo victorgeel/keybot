@@ -71,7 +71,6 @@ hy2://bde0cf51-5bce-473a-8c7d-68949e7e5cfd@77.90.50.171:11401?sni=nl.youxuan.wik
 hy2://c5e6f43c-6f0e-4112-bb97-ed0dba4582d7@1.162.131.195:30001?sni=tw.akebi.cc#
 hy2://c5e6f43c-6f0e-4112-bb97-ed0dba4582d7@1.162.136.28:30001?insecure=1&sni=tw1-vds14.anyhk.co#
 hy2://cf125f42-759d-4112-82c3-014d2ffcb1e7@185.85.242.177:1443?sni=gbr1.587458.xyz#
-hy2://cf125f42-759d-4112-82c3-014d2ffcb1e7@94.159.107.136:1443?sni=de2.587458.xyz#
 hy2://cfe032e4-1bc3-454f-9d09-301b0aea08ff@192.18.145.7:45979?insecure=1&sni=www.bing.com#
 hy2://d44279ff-16ff-4d16-beca-8a46ad7ddbc5@193.25.215.154:443?mport=34000-35000&insecure=1&sni=123.1234567890spcloud.com#
 hy2://dongtaiwang.com@108.181.5.130:65232?insecure=1&sni=apple.com#
