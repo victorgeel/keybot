@@ -64,6 +64,11 @@ hy2://b5c516c0-80cf-4ecf-9f57-283deb8c247f@178.128.55.224:34512?insecure=1&sni=a
 hy2://b5c516c0-80cf-4ecf-9f57-283deb8c247f@91.229.132.116:34512?insecure=1&sni=anycast.us.kg#
 hy2://b72ba5d5-2d5e-45b7-93b5-236d343baa7c@164.152.19.229:47262?insecure=1&sni=www.bing.com#
 hy2://b72ba5d5-2d5e-45b7-93b5-236d343baa7c@64.181.204.186:47262?insecure=1&sni=www.bing.com#
+hy2://b8bd42a9-551f-419d-b70d-4aefdd2cb074@108.181.23.241:443?mport=20000-55000&insecure=1&sni=www.bing.com#
+hy2://b8bd42a9-551f-419d-b70d-4aefdd2cb074@108.181.23.255:443?mport=20000-55000&insecure=1&sni=www.bing.com#
+hy2://b8bd42a9-551f-419d-b70d-4aefdd2cb074@208.87.242.189:443?mport=20000-55000&insecure=1&sni=www.bing.com#
+hy2://b8bd42a9-551f-419d-b70d-4aefdd2cb074@208.87.242.215:443?mport=20000-55000&insecure=1&sni=www.bing.com#
+hy2://b8bd42a9-551f-419d-b70d-4aefdd2cb074@208.87.242.79:443?mport=20000-55000&insecure=1&sni=www.bing.com#
 hy2://bc65e87d-f3a7-46cc-b76c-da7ec1f0228b@195.58.49.84:31000?insecure=1&obfs=salamander&obfs-password=NDhhNmY5YTY0MGYzOTgxYQ%3D%3D#
 hy2://bde0cf51-5bce-473a-8c7d-68949e7e5cfd@209.135.168.230:8080?sni=us4.youxuan.wiki#
 hy2://bde0cf51-5bce-473a-8c7d-68949e7e5cfd@45.12.134.112:33251?sni=jp3.youxuan.wiki#
