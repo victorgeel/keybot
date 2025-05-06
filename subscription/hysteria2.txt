@@ -96,6 +96,7 @@ hy2://f869f5c5-18d0-4971-9d50-013ecef19daf@195.133.5.127:33007?insecure=1&obfs=s
 hy2://f869f5c5-18d0-4971-9d50-013ecef19daf@5.39.252.72:32008?insecure=1&obfs=salamander&obfs-password=M2UyNTc5OWUwYjkyM2Q2OQ%3D%3D#
 hy2://f869f5c5-18d0-4971-9d50-013ecef19daf@91.149.233.178:32002?insecure=1&obfs=salamander&obfs-password=M2UyNTc5OWUwYjkyM2Q2OQ%3D%3D#
 hy2://f9134608-4bb8-43d5-b99e-4b4369fff5f6@82.152.90.200:8443?sni=tw.bailian.uk#
+hy2://nfsn666@192.9.129.48:8888?insecure=1&sni=sj-arm.nfsn666.gq#
 hy2://sysadmin.sysadmin@167.234.249.46:444?insecure=1&sni=a.961229.xyz#
 hy2://sysadmin.sysadmin@170.205.54.5:443?insecure=1#
 hy2://sysadmin.sysadmin@204.216.108.5:2024?insecure=1&sni=204-216-108-5.nip.io#
