@@ -94,7 +94,6 @@ hy2://dongtaiwang.com@46.17.41.5:12904?insecure=1&sni=apple.com#
 hy2://dongtaiwang.com@46.29.163.171:18626?insecure=1&sni=vkvd127.mycdn.me#
 hy2://dongtaiwang.com@46.29.163.171:32555?insecure=1&sni=apple.com#
 hy2://dongtaiwang.com@51.158.54.46:44550?insecure=1&sni=bing.com#
-hy2://dongtaiwang.com@51.159.226.1:44464?insecure=1&sni=www.bing.com#
 hy2://dongtaiwang.com@51.159.226.1:61770?insecure=1&sni=www.bing.com#
 hy2://dongtaiwang.com@hy2.694463.xyz:10011?insecure=1&sni=www.bing.com#
 hy2://f6e4b19a3110d19d@66.135.28.59:443?insecure=1&sni=www.apple.com&obfs=salamander&obfs-password=8c3ce17b#
