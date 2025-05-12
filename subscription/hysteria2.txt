@@ -62,6 +62,7 @@ hy2://KYPSpQi9oC@77.239.112.132:14055?obfs=salamander&obfs-password=v2raybluecry
 hy2://KYPSpQi9oC@77.239.112.132:54075?obfs=salamander&obfs-password=v2raybluecrystal&insecure=1#
 hy2://KevinZakarian@66.23.198.32:443?insecure=1&obfs=salamander&obfs-password=KevinZakarian&sni=www.eliv2ray.net#
 hy2://PassWord2@45.138.99.106:8443?insecure=1&obfs=salamander&obfs-password=PassWord1#
+hy2://PassWord2@45.138.99.106:8443?obfs=salamander&obfs-password=PassWord1&insecure=1#
 hy2://a278eadd-c35c-403f-a286-7767a74307c1@45.140.169.231:8080?insecure=1&sni=www.eliv2ray.net#
 hy2://a914681a-8dda-4c98-8468-c313f5539b14@213.35.99.16:2056?insecure=1&sni=sg3.eyucdn.xyz#
 hy2://aVJxAd6WSF@77.90.135.64:20388?obfs=salamander&obfs-password=bluecrystal3&insecure=1#
@@ -119,6 +120,8 @@ hy2://f869f5c5-18d0-4971-9d50-013ecef19daf@195.133.5.127:33007?insecure=1&obfs=s
 hy2://f869f5c5-18d0-4971-9d50-013ecef19daf@5.39.252.72:32008?insecure=1&obfs=salamander&obfs-password=M2UyNTc5OWUwYjkyM2Q2OQ%3D%3D#
 hy2://f869f5c5-18d0-4971-9d50-013ecef19daf@91.149.233.178:32002?insecure=1&obfs=salamander&obfs-password=M2UyNTc5OWUwYjkyM2Q2OQ%3D%3D#
 hy2://f9134608-4bb8-43d5-b99e-4b4369fff5f6@82.152.90.200:8443?sni=tw.bailian.uk#
+hy2://fcfea73c-d5c6-484c-b5ae-caf9fee6be6a@185.85.242.177:1443?sni=gbr1.587458.xyz#
+hy2://fcfea73c-d5c6-484c-b5ae-caf9fee6be6a@94.159.107.136:1443?sni=de2.587458.xyz#
 hy2://nfsn666@192.9.129.48:8888?insecure=1&sni=sj-arm.nfsn666.gq#
 hy2://sysadmin.sysadmin@167.234.249.46:444?insecure=1&sni=a.961229.xyz#
 hy2://sysadmin.sysadmin@170.205.54.5:443?insecure=1#
