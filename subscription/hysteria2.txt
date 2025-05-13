@@ -53,6 +53,11 @@ hy2://7992f244-8c2c-4a1a-923f-2e116e90149b@198.23.130.211:443?mport=26666-29999&
 hy2://857612aa-9ca5-46df-b976-8b887fdf8625@94.159.107.136:1443?sni=de2.587458.xyz#
 hy2://87f055ba@141.11.89.172:60000?insecure=1&sni=www.bing.com#
 hy2://9514a813-c237-4bfa-87d8-da48b2d020c8@195.133.5.52:35456?insecure=1&sni=mirror.hyperdedic.ru#
+hy2://9514a813-c237-4bfa-87d8-da48b2d020c8@195.133.5.52:37568?insecure=1&sni=mirror.hyperdedic.ru#
+hy2://9514a813-c237-4bfa-87d8-da48b2d020c8@195.133.5.52:39665?insecure=1&sni=mirror.hyperdedic.ru#
+hy2://9514a813-c237-4bfa-87d8-da48b2d020c8@198.46.200.161:39451?insecure=1&sni=www.yahoo.com#
+hy2://9514a813-c237-4bfa-87d8-da48b2d020c8@45.135.134.30:37568?insecure=1&sni=mirror.hyperdedic.ru#
+hy2://9514a813-c237-4bfa-87d8-da48b2d020c8@45.135.134.30:39665?insecure=1&sni=mirror.hyperdedic.ru#
 hy2://96e027fb-ec4b-4d49-b861-346dfd5ebee7@209.141.35.56:50000?insecure=1&sni=mg02.hssl8088.icu#
 hy2://9bb452b106ffc217@207.148.22.93:443?obfs=salamander&obfs-password=cd29099d&insecure=1#
 hy2://9f73c619627d6a5d@66.245.192.15:443?insecure=1&sni=www.apple.com&obfs=salamander&obfs-password=bd7f765e#
@@ -61,7 +66,6 @@ hy2://KYPSpQi9oC@77.239.112.132:14055?obfs=salamander&obfs-password=v2raybluecry
 hy2://KYPSpQi9oC@77.239.112.132:54075?obfs=salamander&obfs-password=v2raybluecrystal&insecure=1#
 hy2://KevinZakarian@66.23.198.32:443?insecure=1&obfs=salamander&obfs-password=KevinZakarian&sni=www.eliv2ray.net#
 hy2://PassWord2@45.138.99.106:8443?insecure=1&obfs=salamander&obfs-password=PassWord1#
-hy2://PassWord2@45.138.99.106:8443?obfs=salamander&obfs-password=PassWord1&insecure=1#
 hy2://a278eadd-c35c-403f-a286-7767a74307c1@45.140.169.231:8080?insecure=1&sni=www.eliv2ray.net#
 hy2://a914681a-8dda-4c98-8468-c313f5539b14@213.35.99.16:2056?insecure=1&sni=sg3.eyucdn.xyz#
 hy2://aVJxAd6WSF@77.90.135.64:20388?obfs=salamander&obfs-password=bluecrystal3&insecure=1#
