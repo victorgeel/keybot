@@ -68,6 +68,7 @@ hy2://KYPSpQi9oC@77.239.112.132:14055?obfs=salamander&obfs-password=v2raybluecry
 hy2://KYPSpQi9oC@77.239.112.132:54075?obfs=salamander&obfs-password=v2raybluecrystal&insecure=1#
 hy2://KevinZakarian@66.23.198.32:443?insecure=1&obfs=salamander&obfs-password=KevinZakarian&sni=www.eliv2ray.net#
 hy2://PassWord2@45.138.99.106:8443?insecure=1&obfs=salamander&obfs-password=PassWord1#
+hy2://PassWord2@45.138.99.106:8443?obfs=salamander&obfs-password=PassWord1&insecure=1#
 hy2://a278eadd-c35c-403f-a286-7767a74307c1@45.140.169.231:8080?insecure=1&sni=www.eliv2ray.net#
 hy2://a914681a-8dda-4c98-8468-c313f5539b14@213.35.99.16:2056?insecure=1&sni=sg3.eyucdn.xyz#
 hy2://aVJxAd6WSF@77.90.135.64:20388?obfs=salamander&obfs-password=bluecrystal3&insecure=1#
@@ -121,7 +122,7 @@ hy2://dongtaiwang.com@51.158.54.46:44550?insecure=1&sni=bing.com#
 hy2://dongtaiwang.com@51.159.226.1:44464?insecure=1&sni=www.bing.com#
 hy2://dongtaiwang.com@51.159.226.1:61770?insecure=1&sni=www.bing.com#
 hy2://dongtaiwang.com@hy2-1.694463.xyz:4489?insecure=1&sni=www.bing.com#
-hy2://dongtaiwang.com@hy2.694463.xyz:10011?insecure=1&sni=www.bing.com#
+hy2://dongtaiwang.com@hy2.694463.xyz:30033?insecure=1&sni=www.bing.com#
 hy2://f6e4b19a3110d19d@66.135.28.59:443?insecure=1&sni=www.apple.com&obfs=salamander&obfs-password=8c3ce17b#
 hy2://f869f5c5-18d0-4971-9d50-013ecef19daf@195.133.5.127:33007?insecure=1&obfs=salamander&obfs-password=NDhhNmY5YTY0MGYzOTgxYQ%3D%3D#
 hy2://f869f5c5-18d0-4971-9d50-013ecef19daf@5.39.252.72:32008?insecure=1&obfs=salamander&obfs-password=M2UyNTc5OWUwYjkyM2Q2OQ%3D%3D#
