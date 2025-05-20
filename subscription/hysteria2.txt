@@ -69,7 +69,6 @@ hy2://KYPSpQi9oC@77.239.112.132:14055?obfs=salamander&obfs-password=v2raybluecry
 hy2://KYPSpQi9oC@77.239.112.132:54075?obfs=salamander&obfs-password=v2raybluecrystal&insecure=1#
 hy2://KevinZakarian@66.23.198.32:443?insecure=1&obfs=salamander&obfs-password=KevinZakarian&sni=www.eliv2ray.net#
 hy2://PassWord2@45.138.99.106:8443?insecure=1&obfs=salamander&obfs-password=PassWord1#
-hy2://PassWord2@45.138.99.106:8443?obfs=salamander&obfs-password=PassWord1&insecure=1#
 hy2://a278eadd-c35c-403f-a286-7767a74307c1@45.140.169.231:8080?insecure=1&sni=www.eliv2ray.net#
 hy2://a914681a-8dda-4c98-8468-c313f5539b14@213.35.99.16:2056?insecure=1&sni=sg3.eyucdn.xyz#
 hy2://aVJxAd6WSF@77.90.135.64:20388?obfs=salamander&obfs-password=bluecrystal3&insecure=1#
