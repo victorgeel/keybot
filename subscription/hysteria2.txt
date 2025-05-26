@@ -135,6 +135,8 @@ hy2://dongtaiwang.com@51.158.205.126:4489?insecure=1&sni=www.bing.com#
 hy2://dongtaiwang.com@51.158.54.46:44550?insecure=1&sni=bing.com#
 hy2://dongtaiwang.com@51.159.226.1:44464?insecure=1&sni=www.bing.com#
 hy2://dongtaiwang.com@51.159.226.1:61770?insecure=1&sni=www.bing.com#
+hy2://dongtaiwang.com@hy2-2.694463.xyz:4489?insecure=1&sni=www.bing.com#
+hy2://dongtaiwang.com@hy2.694463.xyz:30033?insecure=1&sni=www.bing.com#
 hy2://f6e4b19a3110d19d@66.135.28.59:443?insecure=1&sni=www.apple.com&obfs=salamander&obfs-password=8c3ce17b#
 hy2://f869f5c5-18d0-4971-9d50-013ecef19daf@195.133.5.127:33007?insecure=1&obfs=salamander&obfs-password=NDhhNmY5YTY0MGYzOTgxYQ%3D%3D#
 hy2://f869f5c5-18d0-4971-9d50-013ecef19daf@5.39.252.72:32008?insecure=1&obfs=salamander&obfs-password=M2UyNTc5OWUwYjkyM2Q2OQ%3D%3D#
