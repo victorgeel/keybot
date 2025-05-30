@@ -56,6 +56,7 @@ hy2://6cc30ad1@107.175.32.131:2024?insecure=1&sni=www.bing.com#
 hy2://7387bd9b-80df-49e7-b3bb-c63699f8dd8f@137.184.33.88:30001?insecure=1#
 hy2://7992f244-8c2c-4a1a-923f-2e116e90149b@198.23.130.211:443?mport=26666-29999&insecure=1&sni=file-oss-ccs-02.dafei.de#
 hy2://8437d6e8-8492-4ef2-8eb3-0e9ee281882f@194.156.99.107:443?mport=50000-53000&insecure=1&sni=api.push.apple.com#
+hy2://862e90e1-2f26-4506-b8b9-0adf20da05fc@129.153.59.124:54530?insecure=1&sni=www.bing.com#
 hy2://87f055ba@141.11.89.172:60000?insecure=1&sni=www.bing.com#
 hy2://93c16258-48e0-4c72-928c-06434e394540@107.175.32.131:40266?insecure=1&sni=www.bing.com#
 hy2://9514a813-c237-4bfa-87d8-da48b2d020c8@195.133.5.52:35456?insecure=1&sni=mirror.hyperdedic.ru#
@@ -114,6 +115,7 @@ hy2://bde0cf51-5bce-473a-8c7d-68949e7e5cfd@77.90.50.171:11401?sni=nl.youxuan.wik
 hy2://c5e6f43c-6f0e-4112-bb97-ed0dba4582d7@1.162.131.195:30001?sni=tw.akebi.cc#
 hy2://c5e6f43c-6f0e-4112-bb97-ed0dba4582d7@1.162.136.28:30001?insecure=1&sni=tw1-vds14.anyhk.co#
 hy2://cfe032e4-1bc3-454f-9d09-301b0aea08ff@192.18.145.7:45979?insecure=1&sni=www.bing.com#
+hy2://cfe032e4-1bc3-454f-9d09-301b0aea08ff@40.233.70.163:45979?insecure=1&sni=www.bing.com#
 hy2://d44279ff-16ff-4d16-beca-8a46ad7ddbc5@193.25.215.154:443?mport=34000-35000&insecure=1&sni=123.1234567890spcloud.com#
 hy2://d62993f2-f2b7-410d-b56d-2cef2e971038@152.69.225.196:35000?insecure=1&sni=www.apple.com#
 hy2://d62993f2-f2b7-410d-b56d-2cef2e971038@193.123.250.219:35000?insecure=1&sni=www.apple.com#
@@ -122,6 +124,7 @@ hy2://dongtaiwang.com@108.181.5.130:57773?insecure=1&sni=apple.com#
 hy2://dongtaiwang.com@108.181.5.130:65232?insecure=1&sni=apple.com#
 hy2://dongtaiwang.com@195.154.33.70:23587?insecure=1&sni=www.bing.com#
 hy2://dongtaiwang.com@195.154.33.70:4489?insecure=1&sni=www.bing.com#
+hy2://dongtaiwang.com@45.129.2.108:30033?insecure=1&sni=www.bing.com#
 hy2://dongtaiwang.com@46.17.41.217:10011?insecure=1&sni=www.bing.com#
 hy2://dongtaiwang.com@46.17.41.217:37481?insecure=1&sni=vkvd127.mycdn.me#
 hy2://dongtaiwang.com@46.17.41.217:64816?insecure=1&sni=apple.com#
@@ -132,6 +135,7 @@ hy2://dongtaiwang.com@46.29.163.171:30033?insecure=1&sni=www.bing.com#
 hy2://dongtaiwang.com@46.29.163.171:32555?insecure=1&sni=apple.com#
 hy2://dongtaiwang.com@51.158.205.126:4489?insecure=1&sni=www.bing.com#
 hy2://dongtaiwang.com@51.158.54.46:44550?insecure=1&sni=bing.com#
+hy2://dongtaiwang.com@51.159.111.32:31180?insecure=1&sni=apple.com#
 hy2://dongtaiwang.com@51.159.226.1:44464?insecure=1&sni=www.bing.com#
 hy2://dongtaiwang.com@51.159.226.1:61770?insecure=1&sni=www.bing.com#
 hy2://dongtaiwang.com@hy2-2.694463.xyz:4489?insecure=1&sni=www.bing.com#
