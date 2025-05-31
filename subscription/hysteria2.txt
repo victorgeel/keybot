@@ -30,6 +30,7 @@ hy2://2af14ba2-1a50-4e86-9eb9-b9c78f3507dc@54.169.234.79:60007?insecure=1#
 hy2://43326134-a0c8-4149-8a6d-8128791a16c7@140.245.35.177:5002?insecure=1&sni=d1--cn-gotcha204-3.bilivideo.com#
 hy2://43326134-a0c8-4149-8a6d-8128791a16c7@152.53.125.70:5002?insecure=1&sni=d1--cn-gotcha204-3.bilivideo.com#
 hy2://43326134-a0c8-4149-8a6d-8128791a16c7@217.142.186.28:5002?insecure=1&sni=d1--cn-gotcha204-3.bilivideo.com#
+hy2://4494a8b7-de19-4b0f-85fb-4c3aab9654e4@139.162.17.136:443?mport=20000-50000&insecure=1&sni=www.bing.com#
 hy2://4494a8b7-de19-4b0f-85fb-4c3aab9654e4@139.162.37.41:443?mport=20000-50000&insecure=1&sni=www.bing.com#
 hy2://4494a8b7-de19-4b0f-85fb-4c3aab9654e4@91.124.30.24:443?mport=20000-50000&insecure=1&sni=www.bing.com#
 hy2://4c0014ad-562c-4dc9-979e-4241bed0f22a@107.189.14.30:443?mport=22001-22999#
