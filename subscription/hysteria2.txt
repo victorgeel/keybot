@@ -146,6 +146,7 @@ hy2://dongtaiwang.com@51.159.226.1:61770?insecure=1&sni=www.bing.com#
 hy2://dongtaiwang.com@hy2-2.694463.xyz:4489?insecure=1&sni=www.bing.com#
 hy2://f67554a9-b51f-438c-83b5-b1bbf1da45fa@139.162.17.136:443?mport=20000-50000&insecure=1&sni=www.bing.com#
 hy2://f6e4b19a3110d19d@66.135.28.59:443?insecure=1&sni=www.apple.com&obfs=salamander&obfs-password=8c3ce17b#
+hy2://f70ff140-9c4e-44d3-8864-f336d7607d7e@92.112.53.247:20252?insecure=1&sni=jp.xn--mes91t7ofgnw.com#
 hy2://f869f5c5-18d0-4971-9d50-013ecef19daf@195.133.5.127:33007?insecure=1&obfs=salamander&obfs-password=NDhhNmY5YTY0MGYzOTgxYQ%3D%3D#
 hy2://f869f5c5-18d0-4971-9d50-013ecef19daf@5.39.252.72:32008?insecure=1&obfs=salamander&obfs-password=M2UyNTc5OWUwYjkyM2Q2OQ%3D%3D#
 hy2://f869f5c5-18d0-4971-9d50-013ecef19daf@91.149.233.178:32002?insecure=1&obfs=salamander&obfs-password=M2UyNTc5OWUwYjkyM2Q2OQ%3D%3D#
