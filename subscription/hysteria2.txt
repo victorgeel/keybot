@@ -46,7 +46,6 @@ hy2://53bdfd4a-7f38-4cb6-b07e-49974de1a800@51.79.141.63:25022?insecure=1&sni=www
 hy2://5421ad38-6952-437f-a8ce-d6d3e9afd05f@43.199.206.200:30000?insecure=1&sni=www.teslamotors.com#
 hy2://569dda85-bc76-4f8b-ae03-609d97f9e76c@143.198.48.33:5750?insecure=1&sni=www.bing.com#
 hy2://5CBqBh6MeDq6GajcilBiDg%3D%3D@192.227.152.86:61001?insecure=1&sni=192-227-152-86.nip.io#
-hy2://5CBqBh6MeDq6GajcilBiDg==@192.227.152.86:61001?insecure=1&sni=192-227-152-86.nip.io#
 hy2://5Cp8lmFEQN41CDIWuJhpPzH1U@143.14.221.98:9641?insecure=1&sni=bing.com#
 hy2://5d110f18-5a37-4db3-8cf6-f0bced38a1ae@154.85.18.233:443?mport=55000-56000&insecure=1&sni=www.bing.com#
 hy2://5d110f18-5a37-4db3-8cf6-f0bced38a1ae@89.185.27.133:443?mport=55000-56000&insecure=1&sni=www.bing.com#
@@ -74,7 +73,6 @@ hy2://95929244-454A-46A2-A9BF-6B7E90ACEA70@54.178.220.201:1659?sni=jp1.dexlos.co
 hy2://95929244-454A-46A2-A9BF-6B7E90ACEA70@54.95.138.110:1659?sni=jp1.dexlos.com#
 hy2://96e027fb-ec4b-4d49-b861-346dfd5ebee7@209.141.35.56:50000?insecure=1&sni=mg02.hssl8088.icu#
 hy2://96f8cfcc-428a-4a58-b678-aa1efa86e47a@45.147.201.231:30073?insecure=1&obfs=salamander&obfs-password=NDhhNmY5YTY0MGYzOTgxYQ%3D%3D#
-hy2://96f8cfcc-428a-4a58-b678-aa1efa86e47a@45.147.201.231:30073?insecure=1&obfs=salamander&obfs-password=NDhhNmY5YTY0MGYzOTgxYQ==#
 hy2://9bb452b106ffc217@207.148.22.93:443?obfs=salamander&obfs-password=cd29099d&insecure=1#
 hy2://9f73c619627d6a5d@66.245.192.15:443?insecure=1&sni=www.apple.com&obfs=salamander&obfs-password=bd7f765e#
 hy2://ADA91529-7BC1-4A5B-8AE7-30ED6D8959C0@107.172.235.75:56381?insecure=1&sni=dxobg4azmk.gafnode.sbs#
