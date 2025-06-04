@@ -6,6 +6,7 @@ hy2://08f17296-8895-4461-b07f-8946af933831@167.234.210.122:35000?insecure=1&sni=
 hy2://08f17296-8895-4461-b07f-8946af933831@192.18.133.190:35000?insecure=1&sni=tv.apple.com#
 hy2://08f17296-8895-4461-b07f-8946af933831@192.9.130.120:35000?insecure=1&sni=www.apple.com#
 hy2://14bdcd31-8a9f-4cf1-8fcc-60045900357d@107.175.34.118:3002?insecure=1&sni=us.10101251.xyz#
+hy2://14bdcd31-8a9f-4cf1-8fcc-60045900357d@107.175.34.118:3002?sni=us.10101251.xyz#
 hy2://18240b2dfdd76484@70.34.207.153:443?obfs=salamander&obfs-password=d2648ec2&insecure=1&sni=70.34.207.153#
 hy2://18463200c271aa6d@45.63.116.113:443?obfs=salamander&obfs-password=6c80ade6&insecure=1&sni=vkvd127.mycdn.me#
 hy2://19603dd4-f56d-44b1-9f09-6f77711d5889@194.87.10.228:45644?insecure=1&sni=s0.awsstatic.com&obfs=salamander&obfs-password=ZDQxZDhjZDk4ZjAwYjIwNA%3D%3D#
@@ -75,7 +76,6 @@ hy2://95929244-454A-46A2-A9BF-6B7E90ACEA70@3.112.28.125:1659?sni=jp1.dexlos.com#
 hy2://95929244-454A-46A2-A9BF-6B7E90ACEA70@54.178.220.201:1659?sni=jp1.dexlos.com#
 hy2://95929244-454A-46A2-A9BF-6B7E90ACEA70@54.95.138.110:1659?sni=jp1.dexlos.com#
 hy2://96e027fb-ec4b-4d49-b861-346dfd5ebee7@209.141.35.56:50000?insecure=1&sni=mg02.hssl8088.icu#
-hy2://96f8cfcc-428a-4a58-b678-aa1efa86e47a@45.147.201.231:30073?insecure=1&obfs=salamander&obfs-password=NDhhNmY5YTY0MGYzOTgxYQ%3D%3D#
 hy2://9bb452b106ffc217@207.148.22.93:443?obfs=salamander&obfs-password=cd29099d&insecure=1#
 hy2://9f73c619627d6a5d@66.245.192.15:443?insecure=1&sni=www.apple.com&obfs=salamander&obfs-password=bd7f765e#
 hy2://ADA91529-7BC1-4A5B-8AE7-30ED6D8959C0@107.172.235.75:56381?insecure=1&sni=dxobg4azmk.gafnode.sbs#
