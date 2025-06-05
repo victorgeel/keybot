@@ -11,6 +11,7 @@ hy2://18463200c271aa6d@45.63.116.113:443?obfs=salamander&obfs-password=6c80ade6&
 hy2://19603dd4-f56d-44b1-9f09-6f77711d5889@194.87.10.228:45644?insecure=1&sni=s0.awsstatic.com&obfs=salamander&obfs-password=ZDQxZDhjZDk4ZjAwYjIwNA%3D%3D#
 hy2://19603dd4-f56d-44b1-9f09-6f77711d5889@207.174.28.220:45644?insecure=1&sni=s0.awsstatic.com&obfs=salamander&obfs-password=ZDQxZDhjZDk4ZjAwYjIwNA%3D%3D#
 hy2://19603dd4-f56d-44b1-9f09-6f77711d5889@85.239.53.214:45644?insecure=1&sni=s0.awsstatic.com&obfs=salamander&obfs-password=ZDQxZDhjZDk4ZjAwYjIwNA%3D%3D#
+hy2://1d71695a-a45d-4733-9f90-ad56f7a38586@130.61.173.105:50452?insecure=1#
 hy2://1f17cdf0578a2860@45.76.0.86:443?obfs=salamander&obfs-password=4b817757&insecure=1&sni=vkvd127.mycdn.me#
 hy2://21e33241-5c5c-4155-84c5-b8401274efc0@194.87.10.228:20000?insecure=1&sni=apple.com&obfs=salamander&obfs-password=ZDQxZDhjZDk4ZjAwYjIwNA%3D%3D#
 hy2://2213c15d-8d6d-4e4f-986b-ddd59eedc45a@107.172.190.228:52171?insecure=1&sni=www.bing.com#
