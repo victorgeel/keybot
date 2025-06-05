@@ -6,7 +6,6 @@ hy2://08f17296-8895-4461-b07f-8946af933831@167.234.210.122:35000?insecure=1&sni=
 hy2://08f17296-8895-4461-b07f-8946af933831@192.18.133.190:35000?insecure=1&sni=tv.apple.com#
 hy2://08f17296-8895-4461-b07f-8946af933831@192.9.130.120:35000?insecure=1&sni=www.apple.com#
 hy2://14bdcd31-8a9f-4cf1-8fcc-60045900357d@107.175.34.118:3002?insecure=1&sni=us.10101251.xyz#
-hy2://14bdcd31-8a9f-4cf1-8fcc-60045900357d@107.175.34.118:3002?sni=us.10101251.xyz#
 hy2://18240b2dfdd76484@70.34.207.153:443?obfs=salamander&obfs-password=d2648ec2&insecure=1&sni=70.34.207.153#
 hy2://18463200c271aa6d@45.63.116.113:443?obfs=salamander&obfs-password=6c80ade6&insecure=1&sni=vkvd127.mycdn.me#
 hy2://19603dd4-f56d-44b1-9f09-6f77711d5889@194.87.10.228:45644?insecure=1&sni=s0.awsstatic.com&obfs=salamander&obfs-password=ZDQxZDhjZDk4ZjAwYjIwNA%3D%3D#
@@ -117,7 +116,6 @@ hy2://b8bd42a9-551f-419d-b70d-4aefdd2cb074@208.87.242.189:443?mport=20000-55000&
 hy2://b8bd42a9-551f-419d-b70d-4aefdd2cb074@208.87.242.215:443?mport=20000-55000&insecure=1&sni=www.bing.com#
 hy2://b8bd42a9-551f-419d-b70d-4aefdd2cb074@208.87.242.79:443?mport=20000-55000&insecure=1&sni=www.bing.com#
 hy2://bc65e87d-f3a7-46cc-b76c-da7ec1f0228b@195.58.49.84:31000?insecure=1&obfs=salamander&obfs-password=NDhhNmY5YTY0MGYzOTgxYQ%3D%3D#
-hy2://bdcde962-0855-493c-a8c7-acec071973a5@45.147.201.231:33076?insecure=1&obfs=salamander&obfs-password=NDhhNmY5YTY0MGYzOTgxYQ%3D%3D#
 hy2://bde0cf51-5bce-473a-8c7d-68949e7e5cfd@209.135.168.230:8080?sni=us4.youxuan.wiki#
 hy2://bde0cf51-5bce-473a-8c7d-68949e7e5cfd@45.12.134.112:33251?sni=jp3.youxuan.wiki#
 hy2://bde0cf51-5bce-473a-8c7d-68949e7e5cfd@77.90.50.171:11401?sni=nl.youxuan.wiki#
