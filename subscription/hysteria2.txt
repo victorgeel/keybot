@@ -130,8 +130,13 @@ hy2://bde0cf51-5bce-473a-8c7d-68949e7e5cfd@209.135.168.230:8080?sni=us4.youxuan.
 hy2://bde0cf51-5bce-473a-8c7d-68949e7e5cfd@45.12.134.112:33251?sni=jp3.youxuan.wiki#
 hy2://bde0cf51-5bce-473a-8c7d-68949e7e5cfd@77.90.50.171:11401?sni=nl.youxuan.wiki#
 hy2://c0b2490e-2625-4b9c-b766-50fff8b92a21@193.123.76.84:35000?insecure=1&sni=www.apple.com#
+hy2://c38f1b76-d4a0-4560-8e5b-5e9b9fe903fc@8.220.218.111:443?insecure=1&sni=www.bing.com#
 hy2://c5e6f43c-6f0e-4112-bb97-ed0dba4582d7@1.162.131.195:30001?sni=tw.akebi.cc#
 hy2://c5e6f43c-6f0e-4112-bb97-ed0dba4582d7@1.162.136.28:30001?insecure=1&sni=tw1-vds14.anyhk.co#
+hy2://c5e6f43c-6f0e-4112-bb97-ed0dba4582d7@111.230.96.212:1000?insecure=1&sni=hk003.ccwink.cc#
+hy2://c5e6f43c-6f0e-4112-bb97-ed0dba4582d7@114.132.228.126:1000?insecure=1&sni=hk003.ccwink.cc#
+hy2://c5e6f43c-6f0e-4112-bb97-ed0dba4582d7@82.156.174.154:1000?insecure=1&sni=hk003.ccwink.cc#
+hy2://c5e6f43c-6f0e-4112-bb97-ed0dba4582d7@82.156.67.44:1000?insecure=1&sni=hk003.ccwink.cc#
 hy2://cdb63ff9-1767-4a35-97e5-900048e4feb2@104.192.92.99:443?insecure=1&sni=tms.dingtalk.com#
 hy2://cfe032e4-1bc3-454f-9d09-301b0aea08ff@192.18.145.7:45979?insecure=1&sni=www.bing.com#
 hy2://cfe032e4-1bc3-454f-9d09-301b0aea08ff@40.233.70.163:45979?insecure=1&sni=www.bing.com#
@@ -168,6 +173,7 @@ hy2://f67554a9-b51f-438c-83b5-b1bbf1da45fa@139.162.17.136:443?mport=20000-50000&
 hy2://f6e4b19a3110d19d@66.135.28.59:443?insecure=1&sni=www.apple.com&obfs=salamander&obfs-password=8c3ce17b#
 hy2://f70ff140-9c4e-44d3-8864-f336d7607d7e@92.112.53.247:20252?insecure=1&sni=jp.xn--mes91t7ofgnw.com#
 hy2://f869f5c5-18d0-4971-9d50-013ecef19daf@195.133.5.127:33007?insecure=1&obfs=salamander&obfs-password=NDhhNmY5YTY0MGYzOTgxYQ%3D%3D#
+hy2://f869f5c5-18d0-4971-9d50-013ecef19daf@45.147.201.231:30076?insecure=1&obfs=salamander&obfs-password=NDhhNmY5YTY0MGYzOTgxYQ%3D%3D#
 hy2://f869f5c5-18d0-4971-9d50-013ecef19daf@5.39.252.72:32008?insecure=1&obfs=salamander&obfs-password=M2UyNTc5OWUwYjkyM2Q2OQ%3D%3D#
 hy2://f869f5c5-18d0-4971-9d50-013ecef19daf@91.149.233.178:32002?insecure=1&obfs=salamander&obfs-password=M2UyNTc5OWUwYjkyM2Q2OQ%3D%3D#
 hy2://f9134608-4bb8-43d5-b99e-4b4369fff5f6@82.152.90.200:8443?sni=tw.bailian.uk#
