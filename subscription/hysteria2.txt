@@ -142,6 +142,7 @@ hy2://d44279ff-16ff-4d16-beca-8a46ad7ddbc5@193.25.215.154:443?mport=34000-35000&
 hy2://d62993f2-f2b7-410d-b56d-2cef2e971038@152.69.225.196:35000?insecure=1&sni=www.apple.com#
 hy2://d62993f2-f2b7-410d-b56d-2cef2e971038@193.123.250.219:35000?insecure=1&sni=www.apple.com#
 hy2://d9fe1f5e-8f0f-41b6-95f6-d90aa0404924@75.127.13.83:45551?insecure=1&sni=www.bing.com#
+hy2://dongtaiwang.com@108.181.22.213:15167?insecure=1&sni=www.bing.com#
 hy2://dongtaiwang.com@108.181.5.130:57773?insecure=1&sni=apple.com#
 hy2://dongtaiwang.com@108.181.5.130:65232?insecure=1&sni=apple.com#
 hy2://dongtaiwang.com@195.154.33.70:23587?insecure=1&sni=www.bing.com#
