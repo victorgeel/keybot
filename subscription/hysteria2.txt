@@ -46,7 +46,6 @@ hy2://4de5bc14-2c4d-4321-8d95-e6ff3bf0f91a@1.170.215.211:16666?insecure=1#
 hy2://4de5bc14-2c4d-4321-8d95-e6ff3bf0f91a@1.170.228.14:16666?insecure=1#
 hy2://4e9ee29b39a28277@
 hy2://4e9ee29b39a28277@66.135.11.68:443?obfs=salamander&obfs-password=13f7ba5f&insecure=1&sni=wrmelmwxlf.gktevlrqznwqqqozy6hgvqxwfmfs%20vgvs6c7kjnrubuh.cc#
-hy2://4eedcde6-d16a-11ef-973a-f23c913c8d2b@107.167.18.102:8443?insecure=1&sni=57cda03f-sxc9s0-sxgw5w-1j0a4.hy2.gotochinatown.net#
 hy2://4eedcde6-d16a-11ef-973a-f23c913c8d2b@107.167.18.102:8443?insecure=1&sni=e4e48842-swexs0-sxgw5w-1j0a4.hy2.gotochinatown.net#
 hy2://50a88b3f@38.207.130.91:2308?insecure=1&sni=www.bing.com#
 hy2://53bdfd4a-7f38-4cb6-b07e-49974de1a800@152.53.225.161:25560?insecure=1&sni=www.bing.com#
