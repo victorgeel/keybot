@@ -4,6 +4,7 @@ hysteria://141.145.194.153:443?mport=6000-21000&insecure=1&auth=483f8ef7-8480-49
 hysteria://176.32.35.226:62003?insecure=1&peer=apple.com&auth=dongtaiwang.com&upmbps=11&downmbps=55&alpn=h3#
 hysteria://176.32.35.226:62003?upmbps=11&downmbps=55&auth=dongtaiwang.com&insecure=1&peer=apple.com&alpn=h3#
 hysteria://185.22.155.71:10803?insecure=1&peer=www.bing.com&auth=dongtaiwang.com&upmbps=1000&downmbps=1000&alpn=h3#
+hysteria://185.22.155.71:10803?upmbps=1000&downmbps=1000&auth=dongtaiwang.com&insecure=1&peer=www.bing.com&alpn=h3#
 hysteria://185.22.155.71:10803?upmbps=11&downmbps=55&auth=dongtaiwang.com&insecure=1&peer=www.bing.com&alpn=h3#
 hysteria://185.22.155.71:10803?upmbps=11&downmbps=55&auth=dongtaiwang.com&protocol=udp&insecure=1&peer=apple.com&alpn=h3&recv_window=230686720&recv_window_conn=57671680#
 hysteria://195.154.200.178:46938?insecure=1&peer=apple.com&auth=dongtaiwang.com&upmbps=11&downmbps=55&alpn=h3#
