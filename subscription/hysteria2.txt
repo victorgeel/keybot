@@ -163,6 +163,7 @@ hy2://dongtaiwang.com@195.154.33.70:23587?insecure=1&sni=www.bing.com#
 hy2://dongtaiwang.com@195.154.33.70:4489?insecure=1&sni=www.bing.com#
 hy2://dongtaiwang.com@45.129.2.108:30033?insecure=1&sni=www.bing.com#
 hy2://dongtaiwang.com@45.129.2.108:50850?insecure=1&sni=www.bing.com#
+hy2://dongtaiwang.com@45.129.2.248:23579?insecure=1&sni=www.bing.com#
 hy2://dongtaiwang.com@46.17.41.217:10011?insecure=1&sni=www.bing.com#
 hy2://dongtaiwang.com@46.17.41.217:30033?insecure=1&sni=www.bing.com#
 hy2://dongtaiwang.com@46.17.41.217:37481?insecure=1&sni=vkvd127.mycdn.me#
