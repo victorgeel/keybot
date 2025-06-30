@@ -33,7 +33,6 @@ hy2://25a7be37-eca8-4d9e-a8ae-63722bf9ec2e@13.214.39.151:7001?insecure=1&sni=d1-
 hy2://25a7be37-eca8-4d9e-a8ae-63722bf9ec2e@35.74.66.28:7001?insecure=1&sni=d1--cn-gotcha204-3.bilivideo.com#
 hy2://25a7be37-eca8-4d9e-a8ae-63722bf9ec2e@35.74.79.114:7001?insecure=1&sni=d1--cn-gotcha204-3.bilivideo.com#
 hy2://25a7be37-eca8-4d9e-a8ae-63722bf9ec2e@43.207.208.50:7001?insecure=1&sni=d1--cn-gotcha204-3.bilivideo.com#
-hy2://262e7386-f8a9-11ef-ba82-f23c913c8d2b@107.167.18.102:8443?insecure=1&sni=3b58370e-sv8cg0-tbhsus-1tgfe.hy2.gotochinatown.net#
 hy2://27de93f4-144d-4a34-a823-9e30965964ce@45.147.201.231:33062?insecure=1&obfs=salamander&obfs-password=NDhhNmY5YTY0MGYzOTgxYQ%3D%3D#
 hy2://2af14ba2-1a50-4e86-9eb9-b9c78f3507dc@147.182.255.75:30001?insecure=1#
 hy2://2af14ba2-1a50-4e86-9eb9-b9c78f3507dc@18.162.213.220:60007?insecure=1#
@@ -159,6 +158,7 @@ hy2://cfe032e4-1bc3-454f-9d09-301b0aea08ff@40.233.70.163:45979?insecure=1&sni=ww
 hy2://d44279ff-16ff-4d16-beca-8a46ad7ddbc5@193.25.215.154:443?mport=34000-35000&insecure=1&sni=123.1234567890spcloud.com#
 hy2://d62993f2-f2b7-410d-b56d-2cef2e971038@152.69.225.196:35000?insecure=1&sni=www.apple.com#
 hy2://d62993f2-f2b7-410d-b56d-2cef2e971038@193.123.250.219:35000?insecure=1&sni=www.apple.com#
+hy2://d9a1d1f9-3e74-4215-a478-9fa876620794@129.153.71.226:443?mport=50000-53000&insecure=1&sni=www.microsoft.com#
 hy2://d9fe1f5e-8f0f-41b6-95f6-d90aa0404924@75.127.13.83:45551?insecure=1&sni=www.bing.com#
 hy2://dec336f6-e5da-40f4-a4de-986c7b34d587@202.61.241.142:2056?insecure=1&sni=de2.eyucdn.xyz#
 hy2://dongtaiwang.com@108.181.22.213:15167?insecure=1&sni=www.bing.com#
