@@ -62,6 +62,7 @@ hy2://53bdfd4a-7f38-4cb6-b07e-49974de1a800@51.79.141.63:25022?insecure=1&sni=www
 hy2://5421ad38-6952-437f-a8ce-d6d3e9afd05f@43.199.206.200:30000?insecure=1&sni=www.teslamotors.com#
 hy2://569dda85-bc76-4f8b-ae03-609d97f9e76c@143.198.48.33:5750?insecure=1&sni=www.bing.com#
 hy2://5CBqBh6MeDq6GajcilBiDg%3D%3D@192.227.152.86:61001?insecure=1&sni=192-227-152-86.nip.io#
+hy2://5CBqBh6MeDq6GajcilBiDg==@192.227.152.86:61001?insecure=1&sni=192-227-152-86.nip.io#
 hy2://5Cp8lmFEQN41CDIWuJhpPzH1U@143.14.221.98:9641?insecure=1&sni=bing.com#
 hy2://5d110f18-5a37-4db3-8cf6-f0bced38a1ae@154.85.18.233:443?mport=55000-56000&insecure=1&sni=www.bing.com#
 hy2://5d899963-a942-4672-9b43-49dc14910f02@103.115.18.172:18530?insecure=1&sni=ztcloudjp.ztcloud.xyz#
@@ -158,6 +159,7 @@ hy2://c5e6f43c-6f0e-4112-bb97-ed0dba4582d7@114.132.228.126:1000?insecure=1&sni=h
 hy2://c5e6f43c-6f0e-4112-bb97-ed0dba4582d7@82.156.174.154:1000?insecure=1&sni=hk003.ccwink.cc#
 hy2://c5e6f43c-6f0e-4112-bb97-ed0dba4582d7@82.156.67.44:1000?insecure=1&sni=hk003.ccwink.cc#
 hy2://cdb63ff9-1767-4a35-97e5-900048e4feb2@104.192.92.99:443?insecure=1&sni=tms.dingtalk.com#
+hy2://ce26fc79-0a57-46ed-a67a-149fcf523cb1@141.144.203.54:55215?insecure=1&sni=shy42.zqjc.cloud#
 hy2://ce26fc79-0a57-46ed-a67a-149fcf523cb1@152.69.226.231:55215?insecure=1&sni=shy23.zqjc.cloud#
 hy2://cf125f42-759d-4112-82c3-014d2ffcb1e7@185.85.242.177:1443?sni=gbr1.587458.xyz#
 hy2://cfe032e4-1bc3-454f-9d09-301b0aea08ff@192.18.145.7:45979?insecure=1&sni=www.bing.com#
