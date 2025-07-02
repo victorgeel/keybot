@@ -42,8 +42,6 @@ hy2://2af14ba2-1a50-4e86-9eb9-b9c78f3507dc@18.162.213.220:60007?insecure=1#
 hy2://2af14ba2-1a50-4e86-9eb9-b9c78f3507dc@54.169.234.79:60007?insecure=1#
 hy2://2e73e0a6-3b44-4327-a3f6-66802dcaa094@45.147.201.231:30073?insecure=1&obfs=salamander&obfs-password=NDhhNmY5YTY0MGYzOTgxYQ%3D%3D#
 hy2://37d19f09-5fa4-4ad0-8484-55050b582a29@92.112.53.144:2056?insecure=1&sni=zp1.eyujichang.xyz#
-hy2://37d19f09-5fa4-4ad0-8484-55050b582a29@92.112.53.144:2056?insecure=1&sni=zp2.eyujichang.xyz#
-hy2://3ee091ca-ab9c-11ef-a791-f23c9164ca5d@107.167.18.102:8443?insecure=1&sni=3233ac27-swin40-sxh7iw-1ryup.hy2.gotochinatown.net#
 hy2://43326134-a0c8-4149-8a6d-8128791a16c7@140.245.35.177:5002?insecure=1&sni=d1--cn-gotcha204-3.bilivideo.com#
 hy2://43326134-a0c8-4149-8a6d-8128791a16c7@152.53.125.70:5002?insecure=1&sni=d1--cn-gotcha204-3.bilivideo.com#
 hy2://43326134-a0c8-4149-8a6d-8128791a16c7@217.142.186.28:5002?insecure=1&sni=d1--cn-gotcha204-3.bilivideo.com#
