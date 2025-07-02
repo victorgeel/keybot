@@ -204,7 +204,6 @@ hy2://e48d6377dda26840@185.184.70.120:42353?insecure=1#
 hy2://e6d8d743-a9bc-48c9-be99-8f3cc94d16e1@129.146.241.150:10086?insecure=1&sni=aus.pagate.top#
 hy2://e6d8d743-a9bc-48c9-be99-8f3cc94d16e1@138.2.11.148:10086?insecure=1&sni=ajp.pagate.top#
 hy2://e6d8d743-a9bc-48c9-be99-8f3cc94d16e1@152.69.220.154:10086?insecure=1&sni=asg.pagate.top#
-hy2://ef18aaca-4711-11ec-a8bf-f23c91cfbbc9@107.167.18.102:8443?sni=416910ec-syf5s0-szvfpn-laev.hy2.gotochinatown.net#
 hy2://f05d047d-39e1-47d7-baa6-ab53592c77f3@45.147.201.231:33076?insecure=1&obfs=salamander&obfs-password=NDhhNmY5YTY0MGYzOTgxYQ%3D%3D#
 hy2://f67554a9-b51f-438c-83b5-b1bbf1da45fa@139.162.17.136:443?mport=20000-50000&insecure=1&sni=www.bing.com#
 hy2://f6e4b19a3110d19d@66.135.28.59:443?insecure=1&sni=www.apple.com&obfs=salamander&obfs-password=8c3ce17b#
