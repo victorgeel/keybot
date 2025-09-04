@@ -1,3 +1,4 @@
 hy2://7992f244-8c2c-4a1a-923f-2e116e90149b@198.23.130.211:443/?mport=26666-29999&amp
 hy2://dongtaiwang.com@
+hy2://dongtaiwang.com@104.168.10.176:35205?insecure=1&sni=apple.com#
 hy2://dongtaiwang.com@51.158.218.2:50066?insecure=1&sni=www.bing.com#
