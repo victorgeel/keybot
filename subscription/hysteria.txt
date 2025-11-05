@@ -9,6 +9,6 @@ hysteria://51.159.107.20:20001?upmbps=11&downmbps=55&auth=dongtaiwang.com&protoc
 hysteria://51.159.226.1:49003?upmbps=11&downmbps=55&auth=dongtaiwang.com&insecure=1&peer=apple.com&alpn=h3#
 hysteria://51.159.226.1:49003?upmbps=11&downmbps=55&auth=dongtaiwang.com&protocol=udp&insecure=1&peer=apple.com&alpn=h3&recv_window=230686720&recv_window_conn=57671680#
 hysteria://62.210.10.186:35511?upmbps=11&downmbps=55&auth=dongtaiwang.com&insecure=1&peer=apple.com&alpn=h3#
+hysteria://62.210.10.186:40099?upmbps=11&downmbps=55&auth=dongtaiwang.com&protocol=udp&insecure=1&peer=apple.com&alpn=h3&recv_window=276824064&recv_window_conn=69206016#
 hysteria://62.210.11.74:30011?upmbps=11&downmbps=55&auth=dongtaiwang.com&protocol=udp&insecure=1&peer=apple.com&alpn=h3#
-hysteria://62.210.127.217:40099?upmbps=11&downmbps=55&auth=dongtaiwang.com&protocol=udp&insecure=1&peer=apple.com&alpn=h3&recv_window=276824064&recv_window_conn=69206016#
 hysteria://62.210.127.217:50011?upmbps=11&downmbps=55&auth=dongtaiwang.com&protocol=udp&insecure=1&peer=apple.com&alpn=h3#
