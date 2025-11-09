@@ -10,7 +10,9 @@ hy2://Telegram--%3E%40Ln2Ray@gavazn.lnmarketplace.net:45000/?insecure=1&amp
 hy2://Telegram--%3E%40Ln2Ray@gavazn.lnmarketplace.net:45000?obfs=salamander&amp
 hy2://Yet-Another-Public-Config-1@
 hy2://Yet-Another-Public-Config-1@206.71.158.37:35000/?insecure=1&amp
+hy2://Yet-Another-Public-Config-1@206.71.158.37:35000?obfs=salamander&amp
 hy2://cfe032e4-1bc3-454f-9d09-301b0aea08ff@40.233.71.65:45979/?insecure=1&amp
+hy2://cfe032e4-1bc3-454f-9d09-301b0aea08ff@40.233.71.65:45979?insecure=1&amp
 hy2://df7bed3c-06eb-11f0-8ebc-f23c93141fad@9edb1f6e-t56dc0-t9lxaa-1glq.la.shifen.uk:443/?mport=20000-50000&amp
 hy2://df7bed3c-06eb-11f0-8ebc-f23c93141fad@e10829f0-t4un40-t9lb2a-1glq.la.shifen.uk:1743/?sni=e10829f0-t4un40-t9lb2a-1glq.la.shifen.uk#Cha
 hy2://dongtaiwang.com@
