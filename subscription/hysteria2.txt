@@ -22,7 +22,6 @@ hy2://9772ecf2-6732-4bfb-a8b1-f48af577c76c@113.192.61.19:63979/?insecure=1&amp
 hy2://9ec830fd-79da-4706-a964-cb227d7198db@135.148.82.248:33333/?insecure=1#https://t.me/ShadowsocksM15
 hy2://Telegram--%3E%40Ln2Ray@206.71.158.23:45000/?insecure=1&amp
 hy2://Telegram--%3E%40Ln2Ray@gavazn.lnmarketplace.net:45000/?insecure=1&amp
-hy2://Telegram--%3E%40Ln2Ray@gavazn.lnmarketplace.net:45000?obfs=salamander&amp
 hy2://Yet-Another-Public-Config-1@
 hy2://Yet-Another-Public-Config-1@206.71.158.37:35000/?insecure=1&amp
 hy2://Yet-Another-Public-Config-1@206.71.158.37:35000?obfs=salamander&amp
