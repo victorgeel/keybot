@@ -26,7 +26,6 @@ hy2://YwuvGJk36B@81.168.83.89:2083/?insecure=1&amp
 hy2://YwuvGJk36B@filtercheebyha.arshiacomplus.dpdns.org:2083/?insecure=1&amp
 hy2://c232f411-96b5-4b07-b2f7-66a434725ffb@193.142.59.41:23899/?insecure=1&amp
 hy2://c8750ad3-8ba9-4b33-bbdb-e7798845a629@15.204.129.38:33333/?insecure=1#https://t.me/ShadowsocksM16
-hy2://cfe032e4-1bc3-454f-9d09-301b0aea08ff@40.233.71.65:45979?insecure=1&amp
 hy2://df7bed3c-06eb-11f0-8ebc-f23c93141fad@9edb1f6e-t56dc0-t9lxaa-1glq.la.shifen.uk:443/?mport=20000-50000&amp
 hy2://df7bed3c-06eb-11f0-8ebc-f23c93141fad@e10829f0-t4un40-t9lb2a-1glq.la.shifen.uk:1743/?sni=e10829f0-t4un40-t9lb2a-1glq.la.shifen.uk#https://t.me/ShadowsocksM3
 hy2://dongtaiwang.com@
