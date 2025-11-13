@@ -1,2 +1,1 @@
 hy2://Yet-Another-Public-Config-1@206.71.158.37:35000?obfs=salamander&amp
-hy2://dongtaiwang.com@
