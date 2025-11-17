@@ -1,10 +1,7 @@
-hysteria://195.154.200.40:15010?upmbps=11&downmbps=55&auth=dongtaiwang.com&protocol=udp&insecure=1&peer=apple.com&alpn=h3&recv_window=276824064&recv_window_conn=69206016#
-hysteria://2001:bc8:1203:25::3:20001?upmbps=11&downmbps=55&auth=dongtaiwang.com&protocol=udp&insecure=1&peer=apple.com&alpn=h3#
-hysteria://2001:bc8:1203:25::4:20001?upmbps=11&downmbps=55&auth=dongtaiwang.com&protocol=udp&insecure=1&peer=apple.com&alpn=h3#
 hysteria://2001:bc8:32d7:158::2:50011?upmbps=11&downmbps=55&auth=dongtaiwang.com&protocol=udp&insecure=1&peer=apple.com&alpn=h3#
 hysteria://2001:bc8:32d7:158::4:50011?upmbps=11&downmbps=55&auth=dongtaiwang.com&protocol=udp&insecure=1&peer=apple.com&alpn=h3#
 hysteria://207.174.28.39:11111?upmbps=11&downmbps=55&auth=dongtaiwang.com&insecure=1&peer=bing.com&alpn=h3#
-hysteria://51.159.107.20:20001?upmbps=11&downmbps=55&auth=dongtaiwang.com&protocol=udp&insecure=1&peer=apple.com&alpn=h3#
+hysteria://51.159.226.1:49003?upmbps=11&downmbps=55&auth=dongtaiwang.com&insecure=1&peer=apple.com&alpn=h3#
 hysteria://51.159.226.1:49003?upmbps=11&downmbps=55&auth=dongtaiwang.com&protocol=udp&insecure=1&peer=apple.com&alpn=h3&recv_window=230686720&recv_window_conn=57671680#
 hysteria://62.210.10.186:35511?upmbps=11&downmbps=55&auth=dongtaiwang.com&insecure=1&peer=apple.com&alpn=h3#
 hysteria://62.210.10.186:40099?upmbps=11&downmbps=55&auth=dongtaiwang.com&protocol=udp&insecure=1&peer=apple.com&alpn=h3&recv_window=276824064&recv_window_conn=69206016#
