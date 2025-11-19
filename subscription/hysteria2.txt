@@ -11,4 +11,3 @@ hy2://9772ecf2-6732-4bfb-a8b1-f48af577c76c@113.192.61.19:63979?insecure=1&amp
 hy2://Yet-Another-Public-Config-1@206.71.158.37:35000?obfs=salamander&amp
 hy2://c232f411-96b5-4b07-b2f7-66a434725ffb@193.142.59.41:23899?insecure=1&amp
 hy2://cfe032e4-1bc3-454f-9d09-301b0aea08ff@40.233.83.110:45979?insecure=1&amp
-hy2://dongtaiwang.com@
