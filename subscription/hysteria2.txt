@@ -5,6 +5,7 @@ hy2://338ce171-d764-4610-8fd5-6688b0d321f0@140.238.137.165:30102?insecure=1&amp
 hy2://338ce171-d764-4610-8fd5-6688b0d321f0@144.22.187.105:30102?insecure=1#https://t.me/ShadowsocksM16
 hy2://338ce171-d764-4610-8fd5-6688b0d321f0@144.24.101.176:30102?insecure=1#https://t.me/ShadowsocksM10
 hy2://338ce171-d764-4610-8fd5-6688b0d321f0@158.180.77.90:30102?insecure=1#https://t.me/ShadowsocksM13
+hy2://71504eaf-29ac-4190-89d1-dd9ce2c9ee14@
 hy2://78c2bad7-f5f3-41f2-88cc-81de9d05040b@lsj3.mangshe.xyz:2056/?insecure=1&amp
 hy2://Yet-Another-Public-Config-1@206.71.158.37:35000?obfs=salamander&amp
 hy2://a084933d-0b41-4571-ae0c-7163b8c71ed1@de.eyucdn.xyz:2056/?insecure=1&amp
