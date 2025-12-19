@@ -1,3 +1,2 @@
-hysteria://2001:bc8:32d7:902::3:26691?upmbps=11&downmbps=55&auth=dongtaiwang.com&protocol=udp&insecure=1&peer=apple.com&alpn=h3#
 hysteria://207.174.28.39:11111?upmbps=11&downmbps=55&auth=dongtaiwang.com&insecure=1&peer=bing.com&alpn=h3#
 hysteria://62.210.127.177:23880?upmbps=11&downmbps=55&auth=dongtaiwang.com&protocol=udp&insecure=1&peer=bing.com&alpn=h3&recv_window=230686720&recv_window_conn=57671680#
