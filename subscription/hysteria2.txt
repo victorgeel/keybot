@@ -1,3 +1,2 @@
-hy2://Yet-Another-Public-Config-1@206.71.158.37:36400/?insecure=1&amp
 hy2://dongtaiwang.com@
 hy2://dongtaiwang.com@62.210.124.146:22000?insecure=1&sni=www.microsoft.com#
